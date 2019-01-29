@@ -1,0 +1,115 @@
+{
+  "Property Groups" : {
+    "Amicus Properties" : {
+      "All Users" : [ {
+        "Property" : "",
+        "email" : "",
+        "lease end" : "",
+        "lease link" : "",
+        "lease start" : "",
+        "monthlyRent" : "",
+        "name" : "",
+        "phone" : "",
+        "price" : ""
+      }],
+      "Community Posts" : {
+        "-event2" : {
+          "Date" : "Jul 26th",
+          "Message" : "I'm looking for a subletter",
+          "Post By" : "Alex Britton",
+          "Property" : "111 Smith"
+        }
+      },
+      "Maitainance Requests" : {
+        "-event2" : {
+          "Email" : "ab5567@icloud.com",
+          "Issue" : "Plumbing",
+          "Message" : "I have a leaky sink",
+          "Phone" : "(203) 554-7290",
+          "Property" : "111 Smith",
+          "Tenant" : "Alex Britton",
+          "photo" : "http://www.snash.org/doav/images/sinks.jpg"
+        }
+      },
+      "Metrics" : {
+        "Debt" : "0",
+        "Occupancy" : "95%",
+        "Outstanding Rent" : "$2,330",
+        "Payout" : "Oct 3rd",
+        "Portfolio Value" : "$2,300,000",
+        "Properties" : "23",
+        "Rental Income" : "$111,100",
+        "Revenue" : {
+          "April" : 4,
+          "Aug" : 8,
+          "Dec" : 12,
+          "Feb" : 2,
+          "Jan" : 1,
+          "July" : 7,
+          "June" : 6,
+          "March" : 3,
+          "May" : 5,
+          "Nov" : 11,
+          "Oct" : 10,
+          "Sept" : 9
+        },
+        "Units" : "150"
+      },
+      "locations": [{
+        "115 W Perry Street: Apt 1" : {
+          "building " : {
+            "city" : "Savannah ",
+            "image" : "https://firebasestorage.googleapis.com/v0/b/ryan-915d2.appspot.com/o/Property%20Images%2F111_196197_2_1536344495.jpg?alt=media&token=affaa3db-64c6-4a49-a7d4-e193113fe40d",
+            "state" : "Georgia"
+          },
+          "residents" : {
+            "Mikhaila Missimer" : {
+              "email" : "mikhaila.missimer@hotmail.com",
+              "lease end" : "May 31st, 2019",
+              "lease link" : "https://ryan-915d2.firebaseapp.com/leasesigned.html",
+              "lease start" : "June 1st, 2018",
+              "monthlyRent" : "$950",
+              "name" : "Mikhaila Missimer",
+              "price" : 950
+            },
+            "Sophia Bevirt" : {
+              "email" : "slbevirt@verizon.net",
+              "lease end" : "May 31st, 2019",
+              "lease link" : "https://ryan-915d2.firebaseapp.com/leasesigned.html",
+              "lease start" : "June 1st, 2018",
+              "monthlyRent" : "$1200",
+              "name" : "Sophia Bevirt",
+              "price" : 1200
+            }
+          }
+        }
+      }],
+      "Properties" : [{
+        "Beds" : 12,
+        "City" : "Charleston",
+        "Property" : "37 Percy Street",
+        "Rent Roll" : 12000,
+        "State" : "South Carolina",
+        "Users" : {
+          "-event1" : {
+            "email" : "ab5567@nyu.edu",
+            "lease end" : "July 31st, 2019",
+            "lease link" : "https://ryan-915d2.firebaseapp.com/leasesigned.html",
+            "lease start" : "Aug 1st, 2018",
+            "monthlyRent" : "$1300",
+            "name" : "Alex Britton",
+            "phone" : "2035542790",
+            "price" : 1300
+          }
+        },
+        "image" : "https://photos.zillowstatic.com/p_c/IS237m0gnqdl121000000000.jpg",
+        "uidOfFirebase" : "-event2"
+      } ],
+      "Settings" : {
+        "Days Late" : 5,
+        "Late Fee" : "$50",
+        "Multiplier" : "1.5x"
+      }
+    }
+  }
+}
