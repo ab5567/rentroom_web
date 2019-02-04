@@ -6,6 +6,10 @@ import { Container } from 'styled-minimal';
 import SideNavBar from 'containers/SideNavBar';
 import Dashboard from 'routes/Dashboard';
 import Residents from 'routes/Residents';
+import Community from 'routes/Community';
+import Properties from 'routes/Properties';
+import Maintenance from 'routes/Maintenance';
+
 import RoutePrivate from 'components/RoutePrivate';
 
 
@@ -42,9 +46,27 @@ const Private = () => (
         />
         <RoutePrivate
           isAuthenticated
+          path="/fireadmin/properties"
+          exact
+          component={Properties}
+        />
+        <RoutePrivate
+          isAuthenticated
           path="/fireadmin/residents"
           exact
           component={Residents}
+        />
+        <RoutePrivate
+          isAuthenticated
+          path="/fireadmin/maintenance"
+          exact
+          component={Maintenance}
+        />
+        <RoutePrivate
+          isAuthenticated
+          path="/fireadmin/community"
+          exact
+          component={Community}
         />
       </Switch>
     </Body>

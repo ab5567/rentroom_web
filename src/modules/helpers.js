@@ -4,11 +4,15 @@
  * @module Helpers
  */
 
+import downloadCsv from 'download-csv';
+
+
 /**
  * Convert data attributes to Object
  * @param {Element} elem
  * @returns {{}}
  */
+
 export function datasetToObject(elem: Element): Object {
   const data = {};
   [].forEach.call(elem.attributes, attr => {
@@ -53,6 +57,24 @@ export function getClass(obj){
     className="DocumentReference";
   }
   return className;
+}
+
+/**
+* Export CSV data for table
+*/
+export const exportCSV = (colDef, data, filename) => {
+  const csvHeaders = {};
+  colDef.forEach(col => {
+    csvHeaders[col.id] = col.label;
+  })
+  const csvData = data.map(item => {
+    const csvItem = {};
+    colDef.forEach(col => {
+      csvItem[col.id] = item[col.id];
+    })
+    return csvItem;
+  })
+  downloadCsv(csvData, csvHeaders, filename);
 }
 
 

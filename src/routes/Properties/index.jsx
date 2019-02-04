@@ -5,15 +5,13 @@ import styled from 'styled-components';
 import _ from 'lodash';
 import { Container } from 'styled-minimal';
 
+import Table from 'components/Table';
+import CircularProgress from '@material-ui/core/CircularProgress';
 import Header from 'containers/Header';
 import SearchSection from 'containers/SearchSection';
 import { firebaseDatabase } from 'config/firebase';
 import { exportCSV } from 'modules/helpers';
 
-
-
-import Table from 'components/Table';
-import CircularProgress from '@material-ui/core/CircularProgress';
 
 const StyledContainer = styled(Container)`
   text-align: center;
@@ -22,22 +20,20 @@ const StyledContainer = styled(Container)`
 `;
 
 const ColDefs = [
-  { id: 'name', numeric: false, disablePadding: true, label: 'Name', sortable: true },
-  { id: 'email', numeric: false, disablePadding: false, label: 'Email', sortable: false },
+  { id: 'photo', numeric: false, disablePadding: true, label: 'Photo', sortable: false },
+  { id: 'location', numeric: false, disablePadding: false, label: 'Location', sortable: true },
+  { id: 'city', numeric: false, disablePadding: false, label: 'City', sortable: true },
   { id: 'state', numeric: false, disablePadding: false, label: 'State', sortable: true },
-  { id: 'lease end', numeric: false, disablePadding: false, label: 'Lease End', sortable: true },
 ];
 
 const SortColDefs = [
   { id: 'state', label: 'Location', array: [] },
-  { id: 'status', label: 'Status', array: [] },
-  { id: 'lease end', label: 'Lease End', array: [] },
 ];
 
-const SearchColDefs = ['name', 'email'];
+const SearchColDefs = ['location'];
 
 
-export class Residents extends React.PureComponent {
+export class Properties extends React.PureComponent {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     user: PropTypes.object.isRequired,
@@ -57,7 +53,7 @@ export class Residents extends React.PureComponent {
   }
 
   componentDidMount() {
-    const firebasePath = 'property_groups/amicus_properties/users';
+    const firebasePath = 'property_groups/amicus_properties/locations';
     const ref = firebaseDatabase.ref(firebasePath);
     ref.once('value').then((snapshot) => {
       this.processRecords(snapshot.val())
@@ -67,9 +63,17 @@ export class Residents extends React.PureComponent {
   processRecords = (records) => {
     const allData = [];
     for (var key in records){
-      const item = records[key];
-      item.id = key;
-      allData.push(item);
+      const item = {};
+      const object = records[key]['building '];
+      if (object) {
+        item.id = key;
+        item.location = key;
+        item.name = key;
+        item.city = object.City || object.city;
+        item.state = object.state || object.State;
+        item.photo = object.img || object.image; 
+        allData.push(item);
+      }
     }
     const sortColDefs = this.state.sortColDefs;
     sortColDefs.forEach(sortCol => {
@@ -79,6 +83,7 @@ export class Residents extends React.PureComponent {
 
     this.setState({ 
       allData,
+      data: allData,
       sortColDefs
     });
   }
@@ -88,7 +93,7 @@ export class Residents extends React.PureComponent {
   }
 
   handleExport = () => {
-    exportCSV(ColDefs, this.sortAndFilterArray(), 'Residents');
+    exportCSV(ColDefs, this.sortAndFilterArray(), 'Properties');
   }
  
   sortAndFilterArray = () => {
@@ -115,14 +120,16 @@ export class Residents extends React.PureComponent {
     return _.orderBy(filterArray, [orderBy], [order]);
   }
 
-  
+
+
   render() {
     const { allData, order, orderBy, selected, rowsPerPage, page, sortColDefs } = this.state;
     const data = this.sortAndFilterArray();
+
     return (
       <Fragment>
         <Header 
-          title="Residents"
+          title="Properties"
           onExport={this.handleExport}
         />
         <SearchSection
@@ -155,5 +162,5 @@ function mapStateToProps(state) {
   return { user: state.user };
 }
 
-export default connect(mapStateToProps)(Residents);
+export default connect(mapStateToProps)(Properties);
 

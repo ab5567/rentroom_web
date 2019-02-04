@@ -4,12 +4,12 @@ import { connect } from 'react-redux';
 import styled from 'styled-components';
 import _ from 'lodash';
 import { Container } from 'styled-minimal';
+import moment from 'moment';
 
 import Header from 'containers/Header';
 import SearchSection from 'containers/SearchSection';
 import { firebaseDatabase } from 'config/firebase';
 import { exportCSV } from 'modules/helpers';
-
 
 
 import Table from 'components/Table';
@@ -23,21 +23,20 @@ const StyledContainer = styled(Container)`
 
 const ColDefs = [
   { id: 'name', numeric: false, disablePadding: true, label: 'Name', sortable: true },
-  { id: 'email', numeric: false, disablePadding: false, label: 'Email', sortable: false },
-  { id: 'state', numeric: false, disablePadding: false, label: 'State', sortable: true },
-  { id: 'lease end', numeric: false, disablePadding: false, label: 'Lease End', sortable: true },
+  { id: 'text', numeric: false, disablePadding: false, label: 'Text', sortable: true  },
+  { id: 'city', numeric: false, disablePadding: false, label: 'City', sortable: true  },
+  { id: 'date', numeric: false, disablePadding: false, label: 'Date', sortable: true  },
 ];
 
 const SortColDefs = [
-  { id: 'state', label: 'Location', array: [] },
-  { id: 'status', label: 'Status', array: [] },
-  { id: 'lease end', label: 'Lease End', array: [] },
+  { id: 'city', label: 'Location', array: [] },
+  { id: 'date', label: 'Date', array: [] },
 ];
 
-const SearchColDefs = ['name', 'email'];
+const SearchColDefs = ['name', 'text'];
 
 
-export class Residents extends React.PureComponent {
+export class Community extends React.PureComponent {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     user: PropTypes.object.isRequired,
@@ -57,7 +56,7 @@ export class Residents extends React.PureComponent {
   }
 
   componentDidMount() {
-    const firebasePath = 'property_groups/amicus_properties/users';
+    const firebasePath = 'property_groups/amicus_properties/posts';
     const ref = firebaseDatabase.ref(firebasePath);
     ref.once('value').then((snapshot) => {
       this.processRecords(snapshot.val())
@@ -69,6 +68,8 @@ export class Residents extends React.PureComponent {
     for (var key in records){
       const item = records[key];
       item.id = key;
+      const timestamp = Math.round(parseFloat(item.timestamp));
+      item.date = moment.unix(timestamp).format('YYYY-MM-DD');
       allData.push(item);
     }
     const sortColDefs = this.state.sortColDefs;
@@ -79,6 +80,7 @@ export class Residents extends React.PureComponent {
 
     this.setState({ 
       allData,
+      data: allData,
       sortColDefs
     });
   }
@@ -88,7 +90,7 @@ export class Residents extends React.PureComponent {
   }
 
   handleExport = () => {
-    exportCSV(ColDefs, this.sortAndFilterArray(), 'Residents');
+    exportCSV(ColDefs, this.sortAndFilterArray(), 'Community');
   }
  
   sortAndFilterArray = () => {
@@ -115,14 +117,14 @@ export class Residents extends React.PureComponent {
     return _.orderBy(filterArray, [orderBy], [order]);
   }
 
-  
   render() {
     const { allData, order, orderBy, selected, rowsPerPage, page, sortColDefs } = this.state;
     const data = this.sortAndFilterArray();
+
     return (
       <Fragment>
         <Header 
-          title="Residents"
+          title="Community"
           onExport={this.handleExport}
         />
         <SearchSection
@@ -155,5 +157,5 @@ function mapStateToProps(state) {
   return { user: state.user };
 }
 
-export default connect(mapStateToProps)(Residents);
+export default connect(mapStateToProps)(Community);
 

@@ -22,7 +22,7 @@ const Container = styled(StyledContainer)`
 `; 
 
 const Title = styled.div`
-  font-size: 32px;
+  font-size: 2rem;
   font-weight: 900;
 `;
 
@@ -61,11 +61,11 @@ class Header extends React.PureComponent {
         <Container>
           <Title>{title}</Title>
           <ButtonsWrapper>
-            <Button variant="contained" color="secondary">
+            <Button variant="contained" color="secondary" onClick={onPrint}>
               Print
               <StyledIcon />
             </Button>
-            <Button variant="contained" color="secondary">
+            <Button variant="contained" color="secondary" onClick={onExport}>
               Export
               <DownloadIcon className={classNames('fa fa-download')} />
             </Button>

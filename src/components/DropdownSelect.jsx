@@ -8,8 +8,8 @@ import { withStyles } from '@material-ui/core/styles';
 
 const StyledSelect = styled(Select)`
   &&& {
-    font-size: 1.4rem;
-    min-width: 12rem;
+    // font-size: 1.4rem;
+    min-width: 8rem;
     margin-right: 1.5rem;
   }
 `;

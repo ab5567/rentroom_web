@@ -1,13 +1,10 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import styled from 'styled-components';
-import classNames from 'classnames';
 import { Container as StyledContainer } from 'styled-minimal';
 
 import DropdownSelect from 'components/DropdownSelect';
-import MenuItem from '@material-ui/core/MenuItem';
 import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
 
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 import TablePagination from '@material-ui/core/TablePagination';
@@ -27,9 +24,8 @@ const Container = styled(StyledContainer)`
 const StyledInput = styled(OutlinedInput)`
   &&& {
     input {
-      font-size: 1.4rem;
-      padding-top: 1.5rem;
-      padding-bottom: 1.5rem;
+      padding-top: 1rem;
+      padding-bottom: 1rem;
     }
   }
 `;
@@ -37,14 +33,17 @@ const StyledInput = styled(OutlinedInput)`
 const StyledTablePagination = styled(TablePagination)`
   &&& {
     div {
-      font-size: 1.4rem;
+      font-size: 1rem;
     }
     span {
-      font-size: 1.4rem;
+      font-size: 1rem;
+    }
+    svg {
+      right: -0.3rem;
+      top: 0.2rem;
     }
   }
 `;
-
 
 const FloatRightWrapper = styled.div`
   margin-left: auto;
@@ -53,11 +52,9 @@ const FloatRightWrapper = styled.div`
 
 class SearchSection extends React.PureComponent {
   static propTypes = {
-    allLocationArray: PropTypes.array,
-    allStatusArray: PropTypes.array,
-    allLeaseEndArray: PropTypes.array,
     rowsLength: PropTypes.number,
     onChange: PropTypes.func,
+    sortColDefs: PropTypes.array
   };
 
   static defaultProps = {
@@ -83,27 +80,22 @@ class SearchSection extends React.PureComponent {
   }
 
   render() {
-    const { allLocationArray, allStatusArray, allLeaseEndArray, rowsLength } = this.props;
+    const { rowsLength, sortColDefs } = this.props;
     const { page, rowsPerPage, searchTerm } = this.state;
 
     return (
       <Wrapper>
         <Container>
-          <DropdownSelect 
-              placeholder="Location"
-              dataItems={allLocationArray}
-              onChange={location => this.handleChange('location', location)}
-          />
-          <DropdownSelect 
-              placeholder="Status"
-              dataItems={allStatusArray}
-              onChange={status => this.handleChange('status', status)}
-          />
-          <DropdownSelect 
-              placeholder="Lease End"
-              dataItems={allLeaseEndArray}
-              onChange={leaseEnd => this.handleChange('leaseEnd', leaseEnd)}
-          />
+          {
+            sortColDefs.map((sortCol, index) => 
+              <DropdownSelect 
+                key={sortCol.id}
+                placeholder={sortCol.label}
+                dataItems={sortCol.array}
+                onChange={item => this.handleChange(sortCol.id, item)}
+              />
+            )
+          }
           <FormControl>
             <StyledInput
               id="input-with-icon-adornment"
@@ -125,6 +117,7 @@ class SearchSection extends React.PureComponent {
               count={rowsLength}
               rowsPerPage={rowsPerPage}
               page={page}
+              labelDisplayedRows={({from, to, count}) => `${from} - ${to}  of ${count}`}
               backIconButtonProps={{
                 'aria-label': 'Previous Page',
               }}
