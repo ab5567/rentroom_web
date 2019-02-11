@@ -66,7 +66,9 @@ export function* fetchUser() {
 export function* login() {
   try {
     console.log('Logging in....');
-    const res = yield call(signInWithEmailAndPassword, 'austin@austin.com', 'austin');
+    // const res = yield call(signInWithEmailAndPassword, 'austin@austin.com', 'austin');
+    const res = yield call(signInWithEmailAndPassword, 'ab5567@icloud.com', 'testing123');
+
     console.log('Login Result', res);
 
     const payload = {

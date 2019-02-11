@@ -20,7 +20,7 @@ const StyledContainer = styled(Container)`
 `;
 
 const ColDefs = [
-  { id: 'photo', numeric: false, disablePadding: true, label: 'Photo', sortable: false },
+  { id: 'photo', numeric: false, disablePadding: false, label: 'Photo', sortable: false },
   { id: 'tenant', numeric: false, disablePadding: false, label: 'Tenant', sortable: true },
   { id: 'tenant_email', numeric: false, disablePadding: false, label: 'Tenant Email', sortable: true },
   { id: 'subject', numeric: false, disablePadding: false, label: 'Subject', sortable: true },

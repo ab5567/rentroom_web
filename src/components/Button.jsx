@@ -1,16 +1,26 @@
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import Button from '@material-ui/core/Button';
 
 
 const AppButton = styled(Button)`
   && {
-    background-color: ${props => props.theme.palette.primary};
+    color: white;
     font-size: 1rem;
     text-transform: capitalize;
-    
-    &:hover {
-      background-color: ${props => props.theme.palette.primaryDark};
+
+    ${props =>
+      (props.color === 'default') &&
+      css`
+        background-color: ${props.theme.palette.primary};
+        &:hover {
+          background-color: ${props.theme.palette.primaryDark};
+        }
+    `};
+
+    svg {
+      margin-left: 0.5rem;
     }
+
   }
 `;
 

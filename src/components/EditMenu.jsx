@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import PropTypes from 'prop-types';
 
 import IconButton from '@material-ui/core/IconButton';
 import MoreVertIcon from '@material-ui/icons/MoreVert';
@@ -16,6 +17,11 @@ const ButtonLabel = styled.span`
 `;
 
 class EditMenu extends React.Component {
+  static props = {
+    onEdit: PropTypes.func,
+    onDelete: PropTypes.func,
+  }
+
   state = {
     anchorEl: null,
   };
@@ -27,6 +33,16 @@ class EditMenu extends React.Component {
   handleClose = () => {
     this.setState({ anchorEl: null });
   };
+
+  handleEdit = () => {
+    this.setState({ anchorEl: null });
+    this.props.onEdit();
+  }
+
+  handleDelete = () => {
+    this.setState({ anchorEl: null });
+    this.props.onDelete();
+  }
 
   render() {
     const { anchorEl } = this.state;
@@ -58,11 +74,11 @@ class EditMenu extends React.Component {
           <Paper>
             <ClickAwayListener onClickAway={this.handleClose}>
               <MenuList>
-                <MenuItem onClick={this.handleClose}>
+                <MenuItem onClick={this.handleEdit}>
                   <EditIcon/> 
                   <ButtonLabel>Edit</ButtonLabel>
                 </MenuItem>
-                <MenuItem onClick={this.handleClose}>
+                <MenuItem onClick={this.handleDelete}>
                   <DeleteIcon/> 
                   <ButtonLabel>Delete</ButtonLabel>
                 </MenuItem>

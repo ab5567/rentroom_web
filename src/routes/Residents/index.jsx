@@ -9,11 +9,11 @@ import Header from 'containers/Header';
 import SearchSection from 'containers/SearchSection';
 import { firebaseDatabase } from 'config/firebase';
 import { exportCSV } from 'modules/helpers';
-
-
-
 import Table from 'components/Table';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import Progress from 'components/Progress';
+import AddEditResidentModal from './AddEditResidentModal';
+
+import { FIRE_DATA_PATHS } from 'constants/index';
 
 const StyledContainer = styled(Container)`
   text-align: center;
@@ -22,15 +22,15 @@ const StyledContainer = styled(Container)`
 `;
 
 const ColDefs = [
-  { id: 'name', numeric: false, disablePadding: true, label: 'Name', sortable: true },
+  { id: 'name', numeric: false, disablePadding: false, label: 'Name', sortable: true },
   { id: 'email', numeric: false, disablePadding: false, label: 'Email', sortable: false },
+  { id: 'address', numeric: false, disablePadding: false, label: 'Address', sortable: true },
   { id: 'state', numeric: false, disablePadding: false, label: 'State', sortable: true },
   { id: 'lease end', numeric: false, disablePadding: false, label: 'Lease End', sortable: true },
 ];
 
 const SortColDefs = [
   { id: 'state', label: 'Location', array: [] },
-  { id: 'status', label: 'Status', array: [] },
   { id: 'lease end', label: 'Lease End', array: [] },
 ];
 
@@ -43,6 +43,8 @@ export class Residents extends React.PureComponent {
     user: PropTypes.object.isRequired,
   };
 
+  residentAddresses = {};
+
   state = {
     order: 'asc',
     orderBy: 'name',
@@ -53,22 +55,37 @@ export class Residents extends React.PureComponent {
     page: 0,
     rowsPerPage: 10,
     status: '',
-    sortColDefs: SortColDefs
+    sortColDefs: SortColDefs,
+    showModal: false,
+    loading: false
   }
 
   componentDidMount() {
-    const firebasePath = 'property_groups/amicus_properties/users';
-    const ref = firebaseDatabase.ref(firebasePath);
-    ref.once('value').then((snapshot) => {
-      this.processRecords(snapshot.val())
-    });
+    this.setState({ loading: true });
+    this.refreshData();
   }
 
-  processRecords = (records) => {
+  refreshData = () => {
+    firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENT_ADDRESSES).once('value').then((snapshot) => {
+      const addresses = snapshot.val();
+      firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).once('value').then((snapshot) => {
+        this.setState({ loading: false });
+        this.processRecords(snapshot.val(), addresses);
+      });
+    });
+
+
+  }
+
+  processRecords = (records, addresses) => {
     const allData = [];
     for (var key in records){
       const item = records[key];
       item.id = key;
+      item.city = item.City || item.city;
+      item.state = item.state || item.State;
+      item.image = item.img || item.image; 
+      item.address = addresses[key] ? addresses[key].Address : '';
       allData.push(item);
     }
     const sortColDefs = this.state.sortColDefs;
@@ -79,7 +96,9 @@ export class Residents extends React.PureComponent {
 
     this.setState({ 
       allData,
-      sortColDefs
+      data: allData,
+      sortColDefs,
+      selected: []
     });
   }
 
@@ -89,6 +108,47 @@ export class Residents extends React.PureComponent {
 
   handleExport = () => {
     exportCSV(ColDefs, this.sortAndFilterArray(), 'Residents');
+  }
+
+  handleBulkDelete = () => {
+    this.setState({ loading: true });
+
+    const { selected } = this.state; 
+    const deletingItems = {};
+    selected.forEach(id => {
+      deletingItems[id] = null;
+    });
+    firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).update(deletingItems).then((error) => {
+      if (error) {
+        console.log('Bulk Delete Error', error);
+        return;
+      }
+      this.refreshData();
+    });;
+  }
+
+  handleEditItem = (itemId) => {
+    const selectedItem = this.state.allData.find(item => item.id === itemId);
+    this.setState({
+      showModal: true,
+      selectedItem
+    });
+  }
+
+  handleDeleteItem = (itemId) => {
+    this.setState({ loading: true });
+
+    firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).update({ [itemId]: null }).then((error) => {
+      if (error) {
+        console.log('Delete Error', error);
+        return;
+      }
+      this.refreshData();
+    });;
+  }
+
+  handleModal = showModal => () => {
+    this.setState({ showModal })
   }
  
   sortAndFilterArray = () => {
@@ -117,13 +177,16 @@ export class Residents extends React.PureComponent {
 
   
   render() {
-    const { allData, order, orderBy, selected, rowsPerPage, page, sortColDefs } = this.state;
+    const { allData, order, orderBy, selected, rowsPerPage, page, sortColDefs, loading } = this.state;
     const data = this.sortAndFilterArray();
     return (
       <Fragment>
+        <Progress loading={loading}/>
         <Header 
           title="Residents"
+          bulkDeleteDisabled={selected.length === 0}
           onExport={this.handleExport}
+          onBulkDelete={this.handleBulkDelete}
         />
         <SearchSection
           sortColDefs={sortColDefs} 
@@ -131,20 +194,25 @@ export class Residents extends React.PureComponent {
           onChange={this.handleStateChange}
         />
         <StyledContainer>
-          {allData.length === 0 
-          ?  <CircularProgress />
-          :  <Table
-              colDefs={ColDefs}
-              data={data}
-              order={order}
-              orderBy={orderBy}
-              selected={selected}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onChange={this.handleStateChange}
-            />
-          }
+          <Table
+            colDefs={ColDefs}
+            data={data}
+            order={order}
+            orderBy={orderBy}
+            selected={selected}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onChange={this.handleStateChange}
+            onEditItem={this.handleEditItem}
+            onDeleteItem={this.handleDeleteItem}
+          />
         </StyledContainer>
+        <AddEditResidentModal
+          open={this.state.showModal}
+          data={this.state.selectedItem}
+          onClose={this.handleModal(false)}
+          onSave={this.refreshData}
+        />
       </Fragment>
     );
   }

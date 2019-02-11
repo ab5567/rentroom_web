@@ -40,7 +40,7 @@ const UserSection = styled.div`
   display: flex;
   align-items: center;
   color: white;
-  padding-left: 40px;
+  justify-content: center;
 
   div {
     height: 60px;
@@ -51,6 +51,7 @@ const UserSection = styled.div`
 
   span {
     margin-left: 10px;
+    font-size: 1rem;
   }
 
   img {
@@ -81,6 +82,7 @@ const MenuLink = styled(NavLink)`
   }
 `;
 
+const isActive = (path, match, location) => !!(match || path === location.pathname);
 
 class SideNavBar extends React.PureComponent {
   static propTypes = {
@@ -93,40 +95,42 @@ class SideNavBar extends React.PureComponent {
     dispatch(logOut());
   };
 
-  render() {
 
+
+  render() {
+    const { user } = this.props;
     return (
       <Nav>
         <UserSection>
           <div></div>
           {/* <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" className={classes.avatar} /> */}
-          <span>keynexa</span>
+          <span>{user.email}</span>
         </UserSection>
-        <MenuLink to="/fireadmin/dashboard" exact className="dashboard" activeClassName="selected">
+        <MenuLink to="/fireadmin/dashboard" exact={true} activeClassName="selected">
           <span>Dashboard</span>
         </MenuLink>
-        <MenuLink to="/fireadmin/properties" exact className="properties" activeClassName="selected">
+        <MenuLink to="/fireadmin/properties" exact={true} activeClassName="selected">
           <span>Properties</span>
         </MenuLink>
-        <MenuLink to="/fireadmin/residents" exact className="residents" activeClassName="selected">
+        <MenuLink to="/fireadmin/residents" activeClassName="selected">
           <span>Resident</span>
         </MenuLink>
-        <MenuLink to="/fireadmin/listings" exact className="listings" activeClassName="selected">
+        {/* <MenuLink to="/fireadmin/listings" className="listings" activeClassName="selected">
           <span>Listings</span>
-        </MenuLink>
-        <MenuLink to="/fireadmin/maintenance" exact className="maintenance" activeClassName="selected">
+        </MenuLink> */}
+        <MenuLink to="/fireadmin/maintenance"  activeClassName="selected">
           <span>Maintenance</span>
         </MenuLink>
-        <MenuLink to="/fireadmin/community" exact className="community" activeClassName="selected">
+        <MenuLink to="/fireadmin/community" activeClassName="selected">
           <span>Community</span>
         </MenuLink>
-        <MenuLink to="/fireadmin/metriccs" exact className="metriccs" activeClassName="selected">
+        {/* <MenuLink to="/fireadmin/metriccs" className="metriccs" activeClassName="selected">
           <span>Metrics</span>
-        </MenuLink>
-        <MenuLink to="/fireadmin/payments" exact className="payments" activeClassName="selected">
+        </MenuLink> */}
+        <MenuLink to="/fireadmin/payments" activeClassName="selected">
           <span>Payments Setup</span>
         </MenuLink>
-        <MenuLink to="/fireadmin/help" exact className="help" activeClassName="selected">
+        <MenuLink to="/fireadmin/help" activeClassName="selected">
           <span>Help</span>
         </MenuLink>
         <button onClick={this.handleClickLogout}>Logout</button>

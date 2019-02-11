@@ -6,7 +6,9 @@ import { Container } from 'styled-minimal';
 import SideNavBar from 'containers/SideNavBar';
 import Dashboard from 'routes/Dashboard';
 import Residents from 'routes/Residents';
+import AddEditResident from 'routes/Residents/AddEditResident';
 import Community from 'routes/Community';
+import AddEditCommunity from 'routes/Community/AddEditCommunity';
 import Properties from 'routes/Properties';
 import Maintenance from 'routes/Maintenance';
 
@@ -28,49 +30,66 @@ const Body = styled.div`
   bottom: 0;
 `
 
-const Private = () => (
-  <Screen key="Private" data-testid="PrivateWrapper">
-    <SideNavBar />
-    <Body>
-      <Switch>
-      <RoutePrivate
-          isAuthenticated
-          path="/fireadmin"
-          exact
-          component={Residents}/>
+const Private = (props) => {
+  const { match } = props;
+  const baseUrl = match.url;
+
+  return (
+    <Screen key="Private" data-testid="PrivateWrapper">
+      <SideNavBar {...props}/>
+      <Body>
+        <Switch>
         <RoutePrivate
-          isAuthenticated
-          path="/fireadmin/dashboard"
-          exact
-          component={Dashboard}
-        />
-        <RoutePrivate
-          isAuthenticated
-          path="/fireadmin/properties"
-          exact
-          component={Properties}
-        />
-        <RoutePrivate
-          isAuthenticated
-          path="/fireadmin/residents"
-          exact
-          component={Residents}
-        />
-        <RoutePrivate
-          isAuthenticated
-          path="/fireadmin/maintenance"
-          exact
-          component={Maintenance}
-        />
-        <RoutePrivate
-          isAuthenticated
-          path="/fireadmin/community"
-          exact
-          component={Community}
-        />
-      </Switch>
-    </Body>
-  </Screen>
-);
+            isAuthenticated
+            path={`${baseUrl}`}
+            exact
+            component={Residents}/>
+          <RoutePrivate
+            isAuthenticated
+            path={`${baseUrl}/dashboard`}
+            exact
+            component={Dashboard}
+          />
+          <RoutePrivate
+            isAuthenticated
+            path={`${baseUrl}/properties`}
+            exact
+            component={Properties}
+          />
+          <RoutePrivate
+            isAuthenticated
+            path={`${baseUrl}/residents`}
+            exact
+            component={Residents}
+          />
+          <RoutePrivate
+            isAuthenticated
+            path={`${baseUrl}/residents/:id`}
+            exact
+            component={AddEditResident}
+          />
+          <RoutePrivate
+            isAuthenticated
+            path={`${baseUrl}/maintenance`}
+            exact
+            component={Maintenance}
+          />
+          <RoutePrivate
+            isAuthenticated
+            path={`${baseUrl}/community`}
+            exact
+            component={Community}
+          />
+          <RoutePrivate
+            isAuthenticated
+            path={`${baseUrl}/community/:id`}
+            exact
+            component={AddEditCommunity}
+          />
+        </Switch>
+      </Body>
+    </Screen>
+    )
+  };
 
 export default Private;

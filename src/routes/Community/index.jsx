@@ -5,16 +5,17 @@ import styled from 'styled-components';
 import _ from 'lodash';
 import { Container } from 'styled-minimal';
 import moment from 'moment';
-
 import Header from 'containers/Header';
 import SearchSection from 'containers/SearchSection';
 import { firebaseDatabase } from 'config/firebase';
 import { exportCSV } from 'modules/helpers';
+import history from 'modules/history';
 
-
+import Progress from 'components/Progress';
 import Table from 'components/Table';
-import CircularProgress from '@material-ui/core/CircularProgress';
-
+import AddEditCommunityModal from './AddEditCommunityModal';
+import { FIRE_DATA_PATHS } from 'constants/index';
+ 
 const StyledContainer = styled(Container)`
   text-align: center;
   height: calc(100vh - 160px);
@@ -22,7 +23,7 @@ const StyledContainer = styled(Container)`
 `;
 
 const ColDefs = [
-  { id: 'name', numeric: false, disablePadding: true, label: 'Name', sortable: true },
+  { id: 'name', numeric: false, disablePadding: false, label: 'Name', sortable: true },
   { id: 'text', numeric: false, disablePadding: false, label: 'Text', sortable: true  },
   { id: 'city', numeric: false, disablePadding: false, label: 'City', sortable: true  },
   { id: 'date', numeric: false, disablePadding: false, label: 'Date', sortable: true  },
@@ -35,7 +36,6 @@ const SortColDefs = [
 
 const SearchColDefs = ['name', 'text'];
 
-
 export class Community extends React.PureComponent {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
@@ -45,20 +45,27 @@ export class Community extends React.PureComponent {
   state = {
     order: 'asc',
     orderBy: 'name',
-    selected: [],
+    selected: [],    // checked items in the table
     allData: [],
     data: [],
     searchTerm: '',
     page: 0,
     rowsPerPage: 10,
     status: '',
-    sortColDefs: SortColDefs
+    sortColDefs: SortColDefs,
+    showModal: false,
+    loading: false,
+    selectedItem: {}
   }
 
   componentDidMount() {
-    const firebasePath = 'property_groups/amicus_properties/posts';
-    const ref = firebaseDatabase.ref(firebasePath);
-    ref.once('value').then((snapshot) => {
+    this.setState({ loading: true });
+    this.refreshData();
+  }
+
+  refreshData = () => {
+    firebaseDatabase.ref(FIRE_DATA_PATHS.COMMUNITY).once('value').then((snapshot) => {
+      this.setState({ loading: false });
       this.processRecords(snapshot.val())
     });
   }
@@ -68,8 +75,10 @@ export class Community extends React.PureComponent {
     for (var key in records){
       const item = records[key];
       item.id = key;
-      const timestamp = Math.round(parseFloat(item.timestamp));
-      item.date = moment.unix(timestamp).format('YYYY-MM-DD');
+      if (!item.date && item.timestamp) {
+        const timestamp = Math.round(parseFloat(item.timestamp));
+        item.date = moment.unix(timestamp).format('YYYY-MM-DD');
+      }
       allData.push(item);
     }
     const sortColDefs = this.state.sortColDefs;
@@ -81,7 +90,8 @@ export class Community extends React.PureComponent {
     this.setState({ 
       allData,
       data: allData,
-      sortColDefs
+      sortColDefs,
+      selected: []
     });
   }
 
@@ -91,6 +101,57 @@ export class Community extends React.PureComponent {
 
   handleExport = () => {
     exportCSV(ColDefs, this.sortAndFilterArray(), 'Community');
+  }
+
+  handleBulkDelete = () => {
+    this.setState({ loading: true });
+
+    const { selected } = this.state; 
+    const deletingItems = {};
+    selected.forEach(id => {
+      deletingItems[id] = null;
+    });
+    firebaseDatabase.ref(FIRE_DATA_PATHS.COMMUNITY).update(deletingItems).then((error) => {
+      if (error) {
+        console.log('Bulk Delete Error', error);
+        return;
+      }
+      this.refreshData();
+    });;
+  }
+
+  handleEditItem = (itemId) => {
+    const selectedItem = this.state.allData.find(item => item.id === itemId);
+    this.setState({
+      showModal: true,
+      selectedItem
+    });
+    // console.log('Edit item', itemId);
+    // history.push(`${this.props.match.url}/${itemId}`)
+  }
+
+  handleDeleteItem = (itemId) => {
+    this.setState({ loading: true });
+
+    firebaseDatabase.ref(FIRE_DATA_PATHS.COMMUNITY).update({ [itemId]: null }).then((error) => {
+      if (error) {
+        console.log('Delete Error', error);
+        return;
+      }
+      this.refreshData();
+    });;
+  }
+
+  handleAddNewEntry = () => {
+    this.setState({
+      showModal: true,
+      selectedItem: { userId: this.props.user.uid }
+    });
+    // history.push(`${this.props.match.url}/new`)
+  }
+
+  handleModal = (showModal) => {
+    this.setState({ showModal })
   }
  
   sortAndFilterArray = () => {
@@ -113,19 +174,22 @@ export class Community extends React.PureComponent {
       })
       return shouldShow;
     });
-
     return _.orderBy(filterArray, [orderBy], [order]);
   }
 
   render() {
-    const { allData, order, orderBy, selected, rowsPerPage, page, sortColDefs } = this.state;
+    const { order, orderBy, selected, rowsPerPage, page, sortColDefs, loading } = this.state;
     const data = this.sortAndFilterArray();
 
     return (
       <Fragment>
+        <Progress loading={loading}/>
         <Header 
           title="Community"
+          bulkDeleteDisabled={selected.length === 0}
           onExport={this.handleExport}
+          onAddNewEntry={this.handleAddNewEntry}
+          onBulkDelete={this.handleBulkDelete}
         />
         <SearchSection
           sortColDefs={sortColDefs} 
@@ -133,20 +197,25 @@ export class Community extends React.PureComponent {
           onChange={this.handleStateChange}
         />
         <StyledContainer>
-          {allData.length === 0 
-          ?  <CircularProgress />
-          :  <Table
-              colDefs={ColDefs}
-              data={data}
-              order={order}
-              orderBy={orderBy}
-              selected={selected}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onChange={this.handleStateChange}
-            />
-          }
+          <Table
+            colDefs={ColDefs}
+            data={data}
+            order={order}
+            orderBy={orderBy}
+            selected={selected}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onChange={this.handleStateChange}
+            onEditItem={this.handleEditItem}
+            onDeleteItem={this.handleDeleteItem}
+          />
         </StyledContainer>
+        <AddEditCommunityModal
+          open={this.state.showModal}
+          data={this.state.selectedItem}
+          onClose={() => this.handleModal(false)}
+          onSave={this.refreshData}
+        />
       </Fragment>
     );
   }

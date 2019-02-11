@@ -9,6 +9,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Checkbox from '@material-ui/core/Checkbox';
 import TableHeader from 'components/Table/TableHeader';
 import EditMenu from 'components/EditMenu';
+const PlaceholderPropertyImage = require('assets/media/images/property_default_placeholder.gif');
 
 const StyledTable = styled(Table)`
   &&& {
@@ -19,6 +20,7 @@ const StyledTable = styled(Table)`
 `;
 
 const Photo = styled.img`
+  min-width: 200px;
   width: 200px;
   height: 130px;
   object-fit: cover;
@@ -35,6 +37,8 @@ class ExtendedTable extends React.Component {
     rowsPerPage: PropTypes.number,
     page: PropTypes.number,
     onChange: PropTypes.func,
+    onEditItem: PropTypes.func,
+    onDeleteItem: PropTypes.func,
   }
 
   handleSelectAllClick = event => {
@@ -74,6 +78,18 @@ class ExtendedTable extends React.Component {
       );
     }
     this.props.onChange({ selected: newSelected });
+  }
+
+  handleEditItem = itemId => () => {
+    if (this.props.onEditItem) {
+      this.props.onEditItem(itemId)
+    }
+  }
+
+  handleDeleteItem = itemId => () => {
+    if (this.props.onDeleteItem) {
+      this.props.onDeleteItem(itemId)
+    }
   }
 
   isSelected = id => this.props.selected.indexOf(id) !== -1;
@@ -120,12 +136,15 @@ class ExtendedTable extends React.Component {
                       padding={col.disablePadding ? 'none' : 'dense'}
                     > 
                       {col.id === 'photo' 
-                        ? <Photo src={item.photo}/>
+                        ? <Photo src={item.photo ? item.photo : PlaceholderPropertyImage}/>
                         : item[col.id]} 
                     </TableCell>
                   )}
                   <TableCell>
-                    <EditMenu/>
+                    <EditMenu
+                      onEdit={this.handleEditItem(item.id)}
+                      onDelete={this.handleDeleteItem(item.id)}
+                    />
                   </TableCell>
                 </TableRow>
               );

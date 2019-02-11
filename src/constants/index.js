@@ -9,6 +9,9 @@ import keyMirror from 'fbjs/lib/keyMirror';
  * @constant {Object} ActionTypes
  * @memberof Constants
  */
+
+const BaseURL = 'property_groups/amicus_properties';
+
 export const ActionTypes = keyMirror({
   SWITCH_MENU: undefined,
   EXCEPTION: undefined,
@@ -37,3 +40,9 @@ export const STATUS = {
   SUCCESS: 'success',
   ERROR: 'error',
 };
+
+export const FIRE_DATA_PATHS = {
+  COMMUNITY: `${BaseURL}/posts`,
+  RESIDENTS: `${BaseURL}/users`,
+  RESIDENT_ADDRESSES: `${BaseURL}/profile`,
+}

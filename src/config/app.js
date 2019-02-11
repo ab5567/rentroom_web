@@ -1,25 +1,25 @@
 // FireBase
 
 // For production
-exports.firebaseConfig = {
-    apiKey: "AIzaSyAzenKzzevWXmj_UCeMvoWGCH2GPKTw2dg",
-    authDomain: "ryan-915d2.firebaseapp.com",
-    databaseURL: "https://ryan-915d2.firebaseio.com",
-    projectId: "ryan-915d2",
-    storageBucket: "ryan-915d2.appspot.com",
-    messagingSenderId: "815445014237"
-};
+// exports.firebaseConfig = {
+//     apiKey: "AIzaSyAzenKzzevWXmj_UCeMvoWGCH2GPKTw2dg",
+//     authDomain: "ryan-915d2.firebaseapp.com",
+//     databaseURL: "https://ryan-915d2.firebaseio.com",
+//     projectId: "ryan-915d2",
+//     storageBucket: "ryan-915d2.appspot.com",
+//     messagingSenderId: "815445014237"
+// };
 
 
 // For Dev
-// exports.firebaseConfig = {
-//   apiKey: 'AIzaSyCKlUCfFKVRI0T-W7oJdufKD3HtE6KMg_w',
-//   authDomain: 'rentroom-dev.firebaseapp.com',
-//   databaseURL: 'https://rentroom-dev.firebaseio.com',
-//   projectId: 'rentroom-dev',
-//   storageBucket: 'rentroom-dev.appspot.com',
-//   messagingSenderId: '690658338227',
-// };
+exports.firebaseConfig = {
+  apiKey: 'AIzaSyCKlUCfFKVRI0T-W7oJdufKD3HtE6KMg_w',
+  authDomain: 'rentroom-dev.firebaseapp.com',
+  databaseURL: 'https://rentroom-dev.firebaseio.com',
+  projectId: 'rentroom-dev',
+  storageBucket: 'rentroom-dev.appspot.com',
+  messagingSenderId: '690658338227',
+};
 
 // App setup
 exports.adminConfig = {
