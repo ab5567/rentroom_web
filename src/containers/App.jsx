@@ -40,7 +40,7 @@ const MainPrivate = ({ isAuthenticated }) =>
 
 const Main = styled.main`
   min-height: 100vh;
-
+  background: #fbfbfb;
   ${MainPrivate};
 `;
 

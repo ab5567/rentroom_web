@@ -45,4 +45,6 @@ export const FIRE_DATA_PATHS = {
   COMMUNITY: `${BaseURL}/posts`,
   RESIDENTS: `${BaseURL}/users`,
   RESIDENT_ADDRESSES: `${BaseURL}/profile`,
+  MAINTENANCE_REQUESTS: `${BaseURL}/maintenance_requests`,
+  PROPERTIES: `${BaseURL}/locations`,
 }

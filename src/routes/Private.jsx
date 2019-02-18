@@ -10,7 +10,9 @@ import AddEditResident from 'routes/Residents/AddEditResident';
 import Community from 'routes/Community';
 import AddEditCommunity from 'routes/Community/AddEditCommunity';
 import Properties from 'routes/Properties';
+import PropertyDetail from 'routes/Properties/PropertyDetail';
 import Maintenance from 'routes/Maintenance';
+import MaintenanceRequestDetails from 'routes/Maintenance/MaintenanceRequestDetails';
 
 import RoutePrivate from 'components/RoutePrivate';
 
@@ -22,7 +24,7 @@ const Screen = styled.div`
 
 const Body = styled.div`
   height: 100vh;
-  background: white;
+  background: #fbfbfb;
   position: absolute;
   left: 250px;
   right: 0;
@@ -58,6 +60,12 @@ const Private = (props) => {
           />
           <RoutePrivate
             isAuthenticated
+            path={`${baseUrl}/properties/:id`}
+            exact
+            component={PropertyDetail}
+          />
+          <RoutePrivate
+            isAuthenticated
             path={`${baseUrl}/residents`}
             exact
             component={Residents}
@@ -73,6 +81,12 @@ const Private = (props) => {
             path={`${baseUrl}/maintenance`}
             exact
             component={Maintenance}
+          />
+          <RoutePrivate
+            isAuthenticated
+            path={`${baseUrl}/maintenance/:id`}
+            exact
+            component={MaintenanceRequestDetails}
           />
           <RoutePrivate
             isAuthenticated

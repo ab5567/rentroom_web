@@ -30,7 +30,7 @@ const ColDefs = [
   { id: 'monthlyRent', label: 'Monthly Rent', type: 'text', editable: true },
   { id: 'lease start', label: 'Lease Start', type: 'date', editable: true },
   { id: 'lease end', label: 'Lease End', type: 'date', editable: true },
-  { id: 'lease link', label: 'Lease Link', type: 'date', editable: true },
+  { id: 'lease link', label: 'Lease Link', type: 'text', editable: true },
   { id: 'price', label: 'Price', type: 'text', editable: true },
   { id: 'email', label: 'Email', type: 'email', editable: true },
   { id: 'phone', label: 'Phone', type: 'text', editable: true },

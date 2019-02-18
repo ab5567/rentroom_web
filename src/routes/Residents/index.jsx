@@ -73,8 +73,6 @@ export class Residents extends React.PureComponent {
         this.processRecords(snapshot.val(), addresses);
       });
     });
-
-
   }
 
   processRecords = (records, addresses) => {

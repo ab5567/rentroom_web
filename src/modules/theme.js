@@ -10,10 +10,10 @@ export default {
     primary: appColor,
     primaryDark: '#3152bf',
     second: '#333333',
-    third: '#009DC3',
-    fourth: '#5EA8D1',
+    third: '#788998',
     dark: '#343434',
-    light: '#4D4D4F',
+    light: '#9b9b9b',
+
   },
   button: {
     borderRadius: {

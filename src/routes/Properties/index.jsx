@@ -6,12 +6,13 @@ import _ from 'lodash';
 import { Container } from 'styled-minimal';
 
 import Table from 'components/Table';
-import CircularProgress from '@material-ui/core/CircularProgress';
+import Progress from 'components/Progress';
 import Header from 'containers/Header';
 import SearchSection from 'containers/SearchSection';
 import { firebaseDatabase } from 'config/firebase';
 import { exportCSV } from 'modules/helpers';
-
+import { FIRE_DATA_PATHS } from 'constants/index';
+import history from 'modules/history';
 
 const StyledContainer = styled(Container)`
   text-align: center;
@@ -49,13 +50,19 @@ export class Properties extends React.PureComponent {
     page: 0,
     rowsPerPage: 10,
     status: '',
-    sortColDefs: SortColDefs
+    sortColDefs: SortColDefs,
+    loading: false,
+    selectedItem: {}
   }
 
   componentDidMount() {
-    const firebasePath = 'property_groups/amicus_properties/locations';
-    const ref = firebaseDatabase.ref(firebasePath);
-    ref.once('value').then((snapshot) => {
+    this.setState({ loading: true });
+    this.refreshData();
+  }
+
+  refreshData = () => {
+    firebaseDatabase.ref(FIRE_DATA_PATHS.PROPERTIES).once('value').then((snapshot) => {
+      this.setState({ loading: false });
       this.processRecords(snapshot.val())
     });
   }
@@ -95,7 +102,41 @@ export class Properties extends React.PureComponent {
   handleExport = () => {
     exportCSV(ColDefs, this.sortAndFilterArray(), 'Properties');
   }
- 
+
+  handleBulkDelete = () => {
+    this.setState({ loading: true });
+
+    const { selected } = this.state; 
+    const deletingItems = {};
+    selected.forEach(id => {
+      deletingItems[id] = null;
+    });
+    firebaseDatabase.ref(FIRE_DATA_PATHS.PROPERTIES).update(deletingItems).then((error) => {
+      if (error) {
+        console.log('Bulk Delete Error', error);
+        return;
+      }
+      this.refreshData();
+    });;
+  }
+
+  handleEditItem = (itemId) => {
+    console.log('Edit item', itemId);
+    history.push(`${this.props.match.url}/${itemId}`)
+  }
+
+  handleDeleteItem = (itemId) => {
+    this.setState({ loading: true });
+
+    firebaseDatabase.ref(FIRE_DATA_PATHS.PROPERTIES).update({ [itemId]: null }).then((error) => {
+      if (error) {
+        console.log('Delete Error', error);
+        return;
+      }
+      this.refreshData();
+    });;
+  }
+
   sortAndFilterArray = () => {
     const { order, orderBy, allData, sortColDefs, searchTerm } = this.state;
     const filterArray = allData.filter(item => {
@@ -123,11 +164,12 @@ export class Properties extends React.PureComponent {
 
 
   render() {
-    const { allData, order, orderBy, selected, rowsPerPage, page, sortColDefs } = this.state;
+    const { order, orderBy, selected, rowsPerPage, page, sortColDefs, loading } = this.state;
     const data = this.sortAndFilterArray();
 
     return (
       <Fragment>
+        <Progress loading={loading}/>
         <Header 
           title="Properties"
           onExport={this.handleExport}
@@ -138,19 +180,18 @@ export class Properties extends React.PureComponent {
           onChange={this.handleStateChange}
         />
         <StyledContainer>
-          {allData.length === 0 
-          ?  <CircularProgress />
-          :  <Table
-              colDefs={ColDefs}
-              data={data}
-              order={order}
-              orderBy={orderBy}
-              selected={selected}
-              rowsPerPage={rowsPerPage}
-              page={page}
-              onChange={this.handleStateChange}
-            />
-          }
+          <Table
+            colDefs={ColDefs}
+            data={data}
+            order={order}
+            orderBy={orderBy}
+            selected={selected}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onChange={this.handleStateChange}
+            onEditItem={this.handleEditItem}
+            onDeleteItem={this.handleDeleteItem}
+          />
         </StyledContainer>
       </Fragment>
     );

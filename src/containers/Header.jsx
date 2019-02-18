@@ -8,6 +8,7 @@ import PrintIcon from '@material-ui/icons/Print';
 import AddIcon from '@material-ui/icons/Add';
 import DeleteIcon from '@material-ui/icons/Delete';
 import SaveIcon from '@material-ui/icons/Save';
+import EditIcon from '@material-ui/icons/Edit';
 import rgba from 'polished/lib/color/rgba';
 import Button from 'components/Button';
 import MaterialButton from '@material-ui/core/Button';
@@ -15,6 +16,7 @@ import MaterialButton from '@material-ui/core/Button';
 const Wrapper = styled.div`
   height: 80px;
   border-bottom: 1px solid ${props => rgba(props.theme.palette.second, 0.1)};
+  background: white;
 `;
 
 const Container = styled(StyledContainer)`
@@ -57,16 +59,23 @@ class Header extends React.PureComponent {
     onExport: PropTypes.func,
     onAddNewEntry: PropTypes.func,
     onBulkDelete: PropTypes.func,
-    onSave: PropTypes.func
+    onSave: PropTypes.func,
+    onEditProperty: PropTypes.func
   };
 
   render() {
-    const { title, onPrint, onExport, onAddNewEntry, onBulkDelete, onSave, bulkDeleteDisabled } = this.props;
+    const { title, onPrint, onExport, onAddNewEntry, onBulkDelete, onSave, bulkDeleteDisabled, onEditProperty } = this.props;
     return (
       <Wrapper>
         <Container>
           <Title>{title}</Title>
           <ButtonsWrapper>
+            {onEditProperty && 
+              <Button variant="contained" color="default" onClick={onEditProperty}>
+                Edit Property
+                <EditIcon />
+              </Button>
+            }
             {onAddNewEntry && 
               <Button variant="contained" color="default" onClick={onAddNewEntry}>
                 Add New Entry

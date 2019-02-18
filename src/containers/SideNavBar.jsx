@@ -82,6 +82,26 @@ const MenuLink = styled(NavLink)`
   }
 `;
 
+const MenuExternalLink = styled.a`
+  width: 100%;
+  height: 40px;
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  color: white;
+  padding: 10px 40px;
+  font-size: 14px;
+
+  span {
+    white-space: nowrap;
+  }
+
+  &:hover, &:focus {
+    text-decoration: none;
+    background: #4b74ff;    
+  }
+`;
+
 const isActive = (path, match, location) => !!(match || path === location.pathname);
 
 class SideNavBar extends React.PureComponent {
@@ -127,12 +147,12 @@ class SideNavBar extends React.PureComponent {
         {/* <MenuLink to="/fireadmin/metriccs" className="metriccs" activeClassName="selected">
           <span>Metrics</span>
         </MenuLink> */}
-        <MenuLink to="/fireadmin/payments" activeClassName="selected">
+        <MenuExternalLink href="https://connect.stripe.com/express/oauth/authorize?redirect_uri=&client_id=ca_DkHC2qSIwRYt66xQqUrDNmkgbyzeoyMv">
           <span>Payments Setup</span>
-        </MenuLink>
-        <MenuLink to="/fireadmin/help" activeClassName="selected">
+        </MenuExternalLink> 
+        <MenuExternalLink href="https://ryan-915d2.firebaseapp.com/">
           <span>Help</span>
-        </MenuLink>
+        </MenuExternalLink> 
         <button onClick={this.handleClickLogout}>Logout</button>
       </Nav> 
     );

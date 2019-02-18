@@ -25,16 +25,22 @@ const TextFieldWrapper = styled.div`
 `;
 
 const ColDefs = [
-  { id: 'name', label: 'Name', type: 'text', editable: true },
-  { id: 'text', label: 'Text', type: 'text', editable: true },
+  { id: 'name', label: 'Resident Name', type: 'text', editable: true },
+  { id: 'monthlyRent', label: 'Monthly Rent', type: 'text', editable: true },
+  { id: 'lease start', label: 'Lease Start', type: 'date', editable: true },
+  { id: 'lease end', label: 'Lease End', type: 'date', editable: true },
+  { id: 'lease link', label: 'Lease Link', type: 'text', editable: true },
+  { id: 'price', label: 'Price', type: 'text', editable: true },
+  { id: 'email', label: 'Email', type: 'email', editable: true },
+  { id: 'phone', label: 'Phone', type: 'text', editable: true },
+  { id: 'state', label: 'State', type: 'text', editable: true },
   { id: 'city', label: 'City', type: 'text', editable: true },
-  { id: 'date', label: 'Date', type: 'date', editable: true },
-  { id: 'userId', label: 'User ID', type: 'text', editable: false },
-  { id: 'timestamp', label: null, type: 'text', editable: false },
+  { id: 'image', label: null, type: 'image', editable: true },
 ];
 
-export class AddEditCommunityModal extends React.PureComponent {
+export class AddEditPropertyResidentModal extends React.PureComponent {
   static propTypes = {
+    propertyId: PropTypes.string.isRequired,
     open: PropTypes.bool.isRequired,
     data: PropTypes.object,
     onSave: PropTypes.func,
@@ -47,10 +53,10 @@ export class AddEditCommunityModal extends React.PureComponent {
   }
 
   componentDidUpdate(prevProps) {
-		if (this.props.open && !prevProps.open) {
+	if (this.props.open && !prevProps.open) {
       this.setState({ data: this.props.data });
-		}
-	}
+	  }
+  }
 
   handleChange = key => event => {
     const newState = update(this.state, {data: {[key]: {$set: event.target.value}}});
@@ -58,12 +64,16 @@ export class AddEditCommunityModal extends React.PureComponent {
   };
 
   handleSave = () => {
+    let { propertyId } = this.props;
     let id = this.props.data.id;
     if (!id) {
-      id = firebaseDatabase.ref(FIRE_DATA_PATHS.COMMUNITY).push().key;
+      id = firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/residents`).push().key;
       console.log('New Key', id);
     } 
-    const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.COMMUNITY}/${id}`);
+    console.log('Saving DAta', this.state.data);
+    console.log('Saving props', this.props);
+
+    const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/residents/${id}`);
     ref.update(this.state.data).then((error) => {
       this.handleClose();
       if (error) {
@@ -71,7 +81,7 @@ export class AddEditCommunityModal extends React.PureComponent {
         return;
       }
       this.props.onSave();
-    });
+    });;
   }
 
   handleClose = () => {
@@ -80,7 +90,7 @@ export class AddEditCommunityModal extends React.PureComponent {
 
   render() {
     const { isLoading } = this.state;
-    const { open, data } = this.props;
+    const { open } = this.props;
     return (
         <Modal
           open={open}
@@ -88,7 +98,7 @@ export class AddEditCommunityModal extends React.PureComponent {
           fullWidth
           maxWidth="md"
         >
-          <ModalTitle>{`${data.id ? 'Edit' : 'New'} Community`}</ModalTitle>
+          <ModalTitle>Edit Resident</ModalTitle>
           <ModalContent>
             {
               ColDefs.filter(colDef => colDef.label).map(colDef => 
@@ -116,10 +126,5 @@ export class AddEditCommunityModal extends React.PureComponent {
   }
 }
 
-/* istanbul ignore next */
-function mapStateToProps(state) {
-  return { user: state.user };
-}
-
-export default AddEditCommunityModal;
+export default AddEditPropertyResidentModal;
 

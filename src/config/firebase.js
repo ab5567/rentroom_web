@@ -30,6 +30,7 @@ if (Config.remoteSetup) {
 
 export const firebaseDatabase = FirebaseSDK.database();
 export const authRef = FirebaseSDK.auth();
+export const firebaseStorage = FirebaseSDK.storage();
 
 // Promise for Redux-saga
 export function onAuthStateChanged() {
