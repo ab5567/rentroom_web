@@ -8,6 +8,11 @@ import { firebaseDatabase } from 'config/firebase';
 import TextField from '@material-ui/core/TextField';
 import Modal, { ModalTitle, ModalContent, ModalActions } from 'components/Modal';
 import Progress from 'components/Progress';
+import CurrencyInput from 'components/CurrencyInput';
+import PhoneInput from 'components/PhoneInput';
+import StateInput from 'components/StateInput';
+import CityInput from 'components/CityInput';
+
 import { FIRE_DATA_PATHS } from 'constants/index';
 
 
@@ -30,13 +35,14 @@ const ColDefs = [
   { id: 'lease start', label: 'Lease Start', type: 'date', editable: true },
   { id: 'lease end', label: 'Lease End', type: 'date', editable: true },
   { id: 'lease link', label: 'Lease Link', type: 'text', editable: true },
-  { id: 'price', label: 'Price', type: 'text', editable: true },
+  { id: 'price', label: 'Price', type: 'currency', editable: true },
   { id: 'email', label: 'Email', type: 'email', editable: true },
-  { id: 'phone', label: 'Phone', type: 'text', editable: true },
-  { id: 'state', label: 'State', type: 'text', editable: true },
-  { id: 'city', label: 'City', type: 'text', editable: true },
+  { id: 'phone', label: 'Phone', type: 'phone', editable: true },
+  { id: 'state', label: 'State', type: 'state', editable: true },
+  { id: 'city', label: 'City', type: 'city', editable: true },
   { id: 'image', label: null, type: 'image', editable: true },
 ];
+
 
 export class AddEditPropertyResidentModal extends React.PureComponent {
   static propTypes = {
@@ -88,6 +94,60 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
     this.props.onClose();
   }
 
+  renderInput = (colDef) => {
+    const value = this.state.data[colDef.id];
+    switch(colDef.type) {
+      case 'currency':
+        return (
+          <CurrencyInput
+            value={value}
+            onChange={this.handleChange(colDef.id)}
+            id={colDef.id}
+            fullWidth
+          />
+        )
+      case 'phone':
+        return (
+          <PhoneInput
+            value={value}
+            onChange={this.handleChange(colDef.id)}
+            id={colDef.id}
+            fullWidth
+          />
+        )
+      case 'state':
+        return (
+          <StateInput
+            value={value}
+            onChange={this.handleChange(colDef.id)}
+            id={colDef.id}
+            fullWidth
+          />
+        )
+      case 'city':
+        return (
+          <CityInput
+            value={value}
+            onChange={this.handleChange(colDef.id)}
+            id={colDef.id}
+            fullWidth
+          />
+        )
+      default: 
+        return (
+          <TextField
+            id={colDef.id}
+            margin="dense"
+            disabled={!colDef.editable}
+            type={colDef.type}
+            value={value}
+            onChange={this.handleChange(colDef.id)}
+            fullWidth
+          />
+        )
+    }
+  }
+
   render() {
     const { isLoading } = this.state;
     const { open } = this.props;
@@ -104,15 +164,7 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
               ColDefs.filter(colDef => colDef.label).map(colDef => 
                 <TextFieldWrapper key={colDef.id}>
                   <label>{colDef.label}</label>
-                  <TextField
-                    id={colDef.id}
-                    margin="dense"
-                    disabled={!colDef.editable}
-                    type={colDef.type}
-                    value={this.state.data[colDef.id]}
-                    onChange={this.handleChange(colDef.id)}
-                    fullWidth
-                  />
+                  {this.renderInput(colDef)}
                 </TextFieldWrapper>
               )
             }

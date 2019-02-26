@@ -9,6 +9,7 @@ import TextField from '@material-ui/core/TextField';
 import Modal, { ModalTitle, ModalContent, ModalActions } from 'components/Modal';
 import Progress from 'components/Progress';
 import { FIRE_DATA_PATHS } from 'constants/index';
+import CityInput from 'components/CityInput';
 
 
 const TextFieldWrapper = styled.div`
@@ -27,7 +28,7 @@ const TextFieldWrapper = styled.div`
 const ColDefs = [
   { id: 'name', label: 'Name', type: 'text', editable: true },
   { id: 'text', label: 'Text', type: 'text', editable: true },
-  { id: 'city', label: 'City', type: 'text', editable: true },
+  { id: 'city', label: 'City', type: 'city', editable: true },
   { id: 'date', label: 'Date', type: 'date', editable: true },
   { id: 'userId', label: 'User ID', type: 'text', editable: false },
   { id: 'timestamp', label: null, type: 'text', editable: false },
@@ -50,7 +51,35 @@ export class AddEditCommunityModal extends React.PureComponent {
 		if (this.props.open && !prevProps.open) {
       this.setState({ data: this.props.data });
 		}
-	}
+  }
+  
+  renderInput = (colDef) => {
+    const value = this.state.data[colDef.id];
+    switch(colDef.type) {
+      case 'city':
+        return (
+          <CityInput
+            value={value}
+            onChange={this.handleChange(colDef.id)}
+            id={colDef.id}
+            fullWidth
+          />
+        )
+      default: 
+        return (
+          <TextField
+            id={colDef.id}
+            margin="dense"
+            disabled={!colDef.editable}
+            type={colDef.type}
+            value={value}
+            onChange={this.handleChange(colDef.id)}
+            fullWidth
+          />
+        )
+    }
+  }
+
 
   handleChange = key => event => {
     const newState = update(this.state, {data: {[key]: {$set: event.target.value}}});
@@ -94,15 +123,7 @@ export class AddEditCommunityModal extends React.PureComponent {
               ColDefs.filter(colDef => colDef.label).map(colDef => 
                 <TextFieldWrapper key={colDef.id}>
                   <label>{colDef.label}</label>
-                  <TextField
-                    id={colDef.id}
-                    margin="dense"
-                    disabled={!colDef.editable}
-                    type={colDef.type}
-                    value={this.state.data[colDef.id]}
-                    onChange={this.handleChange(colDef.id)}
-                    fullWidth
-                  />
+                  {this.renderInput(colDef)}
                 </TextFieldWrapper>
               )
             }

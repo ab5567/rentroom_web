@@ -14,11 +14,14 @@ import Table from 'components/Table';
 import { firebaseDatabase } from 'config/firebase';
 import TextField from '@material-ui/core/TextField';
 import Progress from 'components/Progress';
+import Segment from 'components/Segment';
+import SectionTitle from 'components/SectionTitle';
 import Avatar from '@material-ui/core/Avatar';
 import { FIRE_DATA_PATHS } from 'constants/index';
 import SendIcon from '@material-ui/icons/Send';
 import AddEditPropertyResidentModal from './AddEditPropertyResidentModal';
 import EditPropertyModal from './EditPropertyModal';
+import { numberWithCommas } from 'modules/helpers';
 
 const RightArrow = require('assets/media/images/right-arrow.png');
 
@@ -49,18 +52,10 @@ const GraphWrapper = styled.div`
   margin-bottom: -40px;
 `
 
-const BuildingInfo = styled.div`
+const BuildingInfo = styled(Segment)`
   flex: 1;
   text-align: left;
-  background: white;
   margin-left: 2rem;
-  padding: 1rem;
-  border-radius: 1rem;
-  box-shadow: -5px 5px 10px 0 rgba(30, 30, 30, 0.05);
-  
-  h2 {
-    margin-top: 0;
-  }
 `;
 
 const StatisticSection = styled.div`
@@ -77,12 +72,8 @@ const DataSection = styled.div`
   }
 `;
 
-const ResidentsSection = styled.div`
+const ResidentsSection = styled(Segment)`
   margin-top: 2rem;
-  background: white;
-  padding: 1rem;
-  border-radius: 1rem;
-  box-shadow: -5px 5px 10px 0 rgba(30, 30, 30, 0.05);
   text-align: left;
 `;
 
@@ -172,7 +163,8 @@ export class PropertyDetail extends React.PureComponent {
     residents: [],
     selectedItem: {},
     paymentPercent: 0,
-    showEditPropertyModal: false
+    showEditPropertyModal: false,
+    rentRoll: 0
   }
 
   componentDidMount() {
@@ -181,8 +173,8 @@ export class PropertyDetail extends React.PureComponent {
       return;
     }
 
-    this.setState({ 
-      loading: true 
+    this.setState({
+      loading: true
     });
 
     firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).once('value').then((snapshot) => {
@@ -210,11 +202,11 @@ export class PropertyDetail extends React.PureComponent {
     const building = data['building '];
     item.city = building.City || building.city;
     item.state = building.state || building.State;
-    item.photo = building.img || building.image; 
+    item.photo = building.img || building.image;
 
     const residents = [];
     let rentRoll = 0;
-    for (var key in data.residents){
+    for (var key in data.residents) {
       const resident = data.residents[key];
       if (resident) {
         resident.id = key;
@@ -227,7 +219,7 @@ export class PropertyDetail extends React.PureComponent {
       const array = _.compact(_.map(_.uniqBy(residents, sortCol.id), (item) => item[sortCol.id]));
       sortCol.array = array;
     });
-    this.setState({ 
+    this.setState({
       ...item,
       residents,
       sortColDefs,
@@ -249,7 +241,7 @@ export class PropertyDetail extends React.PureComponent {
     this.setState({ loading: true });
 
     const propertyId = this.props.match.params.id;
-    const { selected } = this.state; 
+    const { selected } = this.state;
     const deletingItems = {};
     selected.forEach(id => {
       deletingItems[id] = null;
@@ -301,7 +293,7 @@ export class PropertyDetail extends React.PureComponent {
   handlePropertyModal = showEditPropertyModal => () => {
     this.setState({ showEditPropertyModal })
   }
- 
+
   sortAndFilterArray = () => {
     const { order, orderBy, residents, sortColDefs, searchTerm } = this.state;
     const filterArray = residents.filter(item => {
@@ -311,7 +303,7 @@ export class PropertyDetail extends React.PureComponent {
         let includeSearchTerm = false;
         SearchColDefs.forEach(col => {
           includeSearchTerm = includeSearchTerm || (item[col] && item[col].toLowerCase().includes(lowerCaseSearchTerm));
-        }); 
+        });
         shouldShow = shouldShow && includeSearchTerm;
       }
       sortColDefs.forEach(sortCol => {
@@ -327,16 +319,16 @@ export class PropertyDetail extends React.PureComponent {
   }
 
   render() {
-    const { 
+    const {
       loading,
       photo,
       city,
       state,
-      order, 
-      orderBy, 
-      selected, 
-      rowsPerPage, 
-      page, 
+      order,
+      orderBy,
+      selected,
+      rowsPerPage,
+      page,
       sortColDefs,
       rentRoll,
       paymentPercent
@@ -348,7 +340,7 @@ export class PropertyDetail extends React.PureComponent {
     const data = this.sortAndFilterArray();
     console.log('data', data);
     const propertyData = {
-      image: photo, 
+      image: photo,
       city,
       state,
     }
@@ -356,7 +348,7 @@ export class PropertyDetail extends React.PureComponent {
     return (
       <Fragment>
         <Progress loading={loading}/>
-        <Header 
+        <Header
           title="Property Details"
           onAddNewEntry={this.handleAddNewEntry}
           onExport={this.handleExport}
@@ -365,35 +357,35 @@ export class PropertyDetail extends React.PureComponent {
           onEditProperty={this.handleEditProperty}
         />
         <SearchSection
-          sortColDefs={sortColDefs} 
+          sortColDefs={sortColDefs}
           rowsLength={data.length}
           onChange={this.handleStateChange}
         />
         <StyledContainer>
           <BuildingSection>
-            <img src={photo} alt={id}/>
+            <img src={photo} alt={id} />
             <BuildingInfo>
-              <h2>{id}</h2>
+              <SectionTitle>{id}</SectionTitle>
               <StatisticSection>
                 <GraphWrapper>
-                  <Chart options={chartOptions} series={[paymentPercent]} type="radialBar" height="270" width="270"/>
+                  <Chart options={chartOptions} series={[paymentPercent]} type="radialBar" height="270" width="270" />
                 </GraphWrapper>
                 <DataSection>
                   <div>
-                    Rentroll: <strong>${rentRoll}</strong>
+                    Rentroll: <strong>${numberWithCommas(rentRoll)}</strong>
                   </div>
                   <div>
-                    Paid: <strong>${rentRoll}</strong>
+                    Paid: <strong>${numberWithCommas(rentRoll)}</strong>
                   </div>
                   <div>
-                    Outstanding: <strong>${rentRoll}</strong>
+                    Outstanding: <strong>${numberWithCommas(rentRoll)}</strong>
                   </div>
                 </DataSection>
               </StatisticSection>
             </BuildingInfo>
           </BuildingSection>
           <ResidentsSection>
-            <h2>Residents</h2>
+            <SectionTitle>Residents</SectionTitle>
             <Table
               colDefs={ColDefs}
               data={data}

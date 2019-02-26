@@ -11,7 +11,6 @@ import SaveIcon from '@material-ui/icons/Save';
 import EditIcon from '@material-ui/icons/Edit';
 import rgba from 'polished/lib/color/rgba';
 import Button from 'components/Button';
-import MaterialButton from '@material-ui/core/Button';
 
 const Wrapper = styled.div`
   height: 80px;

@@ -27,6 +27,7 @@ class EditMenu extends React.Component {
   };
 
   handleClick = event => {
+    event.stopPropagation();
     this.setState({ anchorEl: event.currentTarget });
   };
 

@@ -10,7 +10,8 @@ import Modal, { ModalTitle, ModalContent, ModalActions } from 'components/Modal'
 import Progress from 'components/Progress';
 import { FIRE_DATA_PATHS } from 'constants/index';
 import Button from 'components/Button';
-
+import StateInput from 'components/StateInput';
+import CityInput from 'components/CityInput';
 
 const TextFieldWrapper = styled.div`
   display: flex;
@@ -57,8 +58,8 @@ const ImageWrapper = styled.div`
 
 
 const ColDefs = [
-  { id: 'state', label: 'State', type: 'text', editable: true },
-  { id: 'city', label: 'City', type: 'text', editable: true },
+  { id: 'state', label: 'State', type: 'state', editable: true },
+  { id: 'city', label: 'City', type: 'city', editable: true },
   { id: 'image', label: null, type: 'image', editable: true },
 ];
 
@@ -80,7 +81,43 @@ export class EditPropertyModal extends React.PureComponent {
 		if (this.props.open && !prevProps.open) {
       this.setState({ data: this.props.data });
 		}
-	}
+  }
+  
+  renderInput = (colDef) => {
+    const value = this.state.data[colDef.id];
+    switch(colDef.type) {
+      case 'state':
+        return (
+          <StateInput
+            value={value}
+            onChange={this.handleChange(colDef.id)}
+            id={colDef.id}
+            fullWidth
+          />
+        )
+      case 'city':
+        return (
+          <CityInput
+            value={value}
+            onChange={this.handleChange(colDef.id)}
+            id={colDef.id}
+            fullWidth
+          />
+        )
+      default: 
+        return (
+          <TextField
+            id={colDef.id}
+            margin="dense"
+            disabled={!colDef.editable}
+            type={colDef.type}
+            value={value}
+            onChange={this.handleChange(colDef.id)}
+            fullWidth
+          />
+        )
+    }
+  }
 
   handleChange = key => event => {
     const newState = update(this.state, {data: {[key]: {$set: event.target.value}}});
@@ -169,15 +206,7 @@ export class EditPropertyModal extends React.PureComponent {
               ColDefs.filter(colDef => colDef.label).map(colDef => 
                 <TextFieldWrapper key={colDef.id}>
                   <label>{colDef.label}</label>
-                  <TextField
-                    id={colDef.id}
-                    margin="dense"
-                    disabled={!colDef.editable}
-                    type={colDef.type}
-                    value={this.state.data[colDef.id]}
-                    onChange={this.handleChange(colDef.id)}
-                    fullWidth
-                  />
+                  {this.renderInput(colDef)}
                 </TextFieldWrapper>
               )
             }

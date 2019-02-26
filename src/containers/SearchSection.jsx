@@ -7,7 +7,7 @@ import DropdownSelect from 'components/DropdownSelect';
 import FormControl from '@material-ui/core/FormControl';
 
 import OutlinedInput from '@material-ui/core/OutlinedInput';
-import TablePagination from '@material-ui/core/TablePagination';
+import TablePagination from 'components/TablePagination';
 import InputAdornment from '@material-ui/core/InputAdornment';
 import SearchRounded from '@material-ui/icons/SearchRounded';
 
@@ -30,20 +30,7 @@ const StyledInput = styled(OutlinedInput)`
   }
 `;
 
-const StyledTablePagination = styled(TablePagination)`
-  &&& {
-    div {
-      font-size: 1rem;
-    }
-    span {
-      font-size: 1rem;
-    }
-    svg {
-      right: -0.3rem;
-      top: 0.2rem;
-    }
-  }
-`;
+
 
 const FloatRightWrapper = styled.div`
   margin-left: auto;
@@ -111,7 +98,7 @@ class SearchSection extends React.PureComponent {
             />
           </FormControl>
           <FloatRightWrapper>
-            <StyledTablePagination
+            <TablePagination
               rowsPerPageOptions={[5, 10, 25]}
               component="div"
               count={rowsLength}

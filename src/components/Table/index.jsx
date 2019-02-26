@@ -9,6 +9,7 @@ import TableRow from '@material-ui/core/TableRow';
 import Checkbox from '@material-ui/core/Checkbox';
 import TableHeader from 'components/Table/TableHeader';
 import EditMenu from 'components/EditMenu';
+import { numberWithCommas } from '../../modules/helpers';
 const PlaceholderPropertyImage = require('assets/media/images/property_default_placeholder.gif');
 
 const StyledTable = styled(Table)`
@@ -61,6 +62,7 @@ class ExtendedTable extends React.Component {
   }
 
   handleClick = (event, id) => {
+    event.stopPropagation();
     const { selected } = this.props;
     const selectedIndex = selected.indexOf(id);
     let newSelected = [];
@@ -95,12 +97,13 @@ class ExtendedTable extends React.Component {
   isSelected = id => this.props.selected.indexOf(id) !== -1;
 
   render() {
-    const { data, order, orderBy, selected, rowsPerPage, page, colDefs } = this.props;
+    const { data, order, orderBy, selected, rowsPerPage, page, colDefs, onEditItem, onDeleteItem } = this.props;
 
     if (data.length === 0) {
       return <div></div>
     }
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
+    const hasEditing = (onEditItem || onDeleteItem);
 
     return (
       <StyledTable aria-labelledby="tableTitle">
@@ -112,6 +115,7 @@ class ExtendedTable extends React.Component {
           onRequestSort={this.handleRequestSort}
           rowCount={data.length}
           colDefs={colDefs}
+          hasEditing={hasEditing}
         />
         <TableBody>
           {data
@@ -125,10 +129,13 @@ class ExtendedTable extends React.Component {
                   tabIndex={-1}
                   key={item.id}
                   selected={isSelected}
+                  onClick={this.handleEditItem(item.id)}
                 >
-                  <TableCell padding="checkbox">
-                    <Checkbox checked={isSelected} color="primary" onClick={event => this.handleClick(event, item.id)}/>
-                  </TableCell>
+                  {hasEditing &&
+                    <TableCell padding="checkbox">
+                      <Checkbox checked={isSelected} color="primary" onClick={event => this.handleClick(event, item.id)}/>
+                    </TableCell>
+                  }
                   {colDefs.map((col, index) => 
                     <TableCell 
                       key={`${item.id}_${index}`} 
@@ -137,15 +144,18 @@ class ExtendedTable extends React.Component {
                     > 
                       {col.id === 'photo' 
                         ? <Photo src={item.photo ? item.photo : PlaceholderPropertyImage}/>
-                        : item[col.id]} 
+                        : col.id === 'price' ? `$${numberWithCommas(item[col.id])}` : item[col.id]} 
                     </TableCell>
                   )}
-                  <TableCell>
-                    <EditMenu
-                      onEdit={this.handleEditItem(item.id)}
-                      onDelete={this.handleDeleteItem(item.id)}
-                    />
-                  </TableCell>
+                  {hasEditing &&
+                    <TableCell>
+                      <EditMenu
+                        onEdit={this.handleEditItem(item.id)}
+                        onDelete={this.handleDeleteItem(item.id)}
+                      />
+                    </TableCell>
+                  }
+
                 </TableRow>
               );
             })}

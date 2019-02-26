@@ -55,7 +55,7 @@ export function* fetchUser() {
   } catch (err) {
     yield put({
       type: ActionTypes.USER_LOGIN_FAILURE,
-      payload: err,
+      payload: err.message,
     });
   }
 }
@@ -63,11 +63,12 @@ export function* fetchUser() {
 /**
  * Login
  */
-export function* login() {
+export function* login(loginAction) {
   try {
-    console.log('Logging in....');
+    console.log('Logging in....', loginAction);
+    const { email, password } = loginAction.payload;
     // const res = yield call(signInWithEmailAndPassword, 'austin@austin.com', 'austin');
-    const res = yield call(signInWithEmailAndPassword, 'ab5567@icloud.com', 'testing123');
+    const res = yield call(signInWithEmailAndPassword, email, password);
 
     console.log('Login Result', res);
 
@@ -81,9 +82,10 @@ export function* login() {
     });
   } catch (err) {
     /* istanbul ignore next */
+    console.log(err);
     yield put({
       type: ActionTypes.USER_LOGIN_FAILURE,
-      payload: err,
+      payload: err.message,
     });
   }
 }

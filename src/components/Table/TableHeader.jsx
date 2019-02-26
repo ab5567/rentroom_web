@@ -16,7 +16,8 @@ class TableHeader extends React.Component {
     orderBy: PropTypes.string,
     numSelected: PropTypes.number,
     rowCount: PropTypes.number,
-    onSelectAllClick: PropTypes.func
+    onSelectAllClick: PropTypes.func,
+    hasEditing: PropTypes.bool
   }
 
   createSortHandler = (property, sortable) => event => {
@@ -26,19 +27,21 @@ class TableHeader extends React.Component {
   };
 
   render() {
-    const { onSelectAllClick, order, orderBy, numSelected, rowCount, colDefs } = this.props;
+    const { onSelectAllClick, order, orderBy, numSelected, rowCount, colDefs, hasEditing } = this.props;
 
     return (
       <TableHead>
         <TableRow>
-          <TableCell padding="checkbox">
-            <Checkbox
-              indeterminate={numSelected > 0 && numSelected < rowCount}
-              checked={numSelected === rowCount}
-              onChange={onSelectAllClick}
-              color="primary"
-            />
-          </TableCell>
+          {hasEditing &&
+            <TableCell padding="checkbox">
+              <Checkbox
+                indeterminate={numSelected > 0 && numSelected < rowCount}
+                checked={numSelected === rowCount}
+                onChange={onSelectAllClick}
+                color="primary"
+              />
+            </TableCell>
+          }
           {colDefs.map(row => (
               <TableCell
                 key={row.id}
@@ -56,7 +59,7 @@ class TableHeader extends React.Component {
               </TableCell>
             )
           )}
-          <TableCell/>
+          {hasEditing && <TableCell/>}
         </TableRow>
       </TableHead>
     );

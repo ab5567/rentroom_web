@@ -7,7 +7,8 @@ export const userState = {
   isAuthenticated: false,
   status: STATUS.IDLE,
   uid: null,
-  email: null
+  email: null,
+  loginErrorMsg: null
 };
 
 export default {
@@ -22,7 +23,12 @@ export default {
             isAuthenticated: { $set: true },
             status: { $set: STATUS.READY },
             uid: { $set: action.payload.uid },
-            email: { $set: action.payload.email }
+            email: { $set: action.payload.email },
+            loginErrorMsg: { $set: null }
+          }),
+      [ActionTypes.USER_LOGIN_FAILURE]: (state, action) => 
+          immutable(state, {
+            loginErrorMsg: { $set: action.payload }
           }),
       [ActionTypes.USER_LOGOUT]: state =>
         immutable(state, {

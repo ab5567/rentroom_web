@@ -20,8 +20,10 @@ const RightArrow = require('assets/media/images/right-arrow.png');
 
 const StyledContainer = styled(Container)`
   text-align: center;
-  height: calc(100vh - 160px);
+  height: calc(100vh - 100px);
   overflow: auto;
+  display: flex;
+  flex-direction: column;
 `;
 
 const TenantInfoSection = styled.div`
@@ -50,6 +52,11 @@ const InfoItem = styled.div`
     font-size: 1rem;
     color: ${props => props.theme.palette.second};
   }
+`;
+
+const MessagesSection = styled.div`
+  flex: 1;
+  overflow-y: scroll;
 `;
 
 const MessageContainer = styled.div`
@@ -85,9 +92,11 @@ const ChatAvatar = styled(Avatar)`
 `;
 
 const InputContainer = styled.div`
+  margin-top: 1rem;
+  margin-bottom: 2rem;
   width: 100%;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   align-items: flex-start;
 `;
 
@@ -106,6 +115,7 @@ const Input = styled.div`
     outline: none;
     font-size: 1rem;
     margin-right: 1rem;
+    background: transparent;
   }
 
   button {
@@ -251,32 +261,34 @@ export class MaintenanceRequestDetails extends React.PureComponent {
               </InfoItem>
             }
           </TenantInfoSection>
-          { messages &&
-            messages.map(item => {
-            const { timestamp, message, photo, sender } = item;
-            const right = (sender === user.uid);
-            const dateString = moment.unix(Math.round(parseFloat(timestamp))).format('MMM Do, h:mm a');
-            return (
-              !right 
-              ?
-              <MessageContainer key={item.timestamp}>
-                <ChatAvatar>{right ? '' : tenant.charAt(0)}</ChatAvatar>
-                <MessageWrapper right={right}>
-                  {message}
-                </MessageWrapper>
-                <DateLabel>{dateString}</DateLabel>
-              </MessageContainer>
-              :
-              <MessageContainer key={item.timestamp} right>
-                <DateLabel>{dateString}</DateLabel>
-                <MessageWrapper right={right}>
-                  {message}
-                </MessageWrapper>
-                <ChatAvatar>{right ? '' : tenant.charAt(0)}</ChatAvatar>
-              </MessageContainer>
-            );
-          })
-          }
+          <MessagesSection>
+            { messages &&
+              messages.map(item => {
+                const { timestamp, message, photo, sender } = item;
+                const right = (sender === user.uid);
+                const dateString = moment.unix(Math.round(parseFloat(timestamp))).format('MMM Do, h:mm a');
+                return (
+                  !right 
+                  ?
+                  <MessageContainer key={item.timestamp}>
+                    <ChatAvatar>{right ? '' : tenant.charAt(0)}</ChatAvatar>
+                    <MessageWrapper right={right}>
+                      {message}
+                    </MessageWrapper>
+                    <DateLabel>{dateString}</DateLabel>
+                  </MessageContainer>
+                  :
+                  <MessageContainer key={item.timestamp} right>
+                    <DateLabel>{dateString}</DateLabel>
+                    <MessageWrapper right={right}>
+                      {message}
+                    </MessageWrapper>
+                    <ChatAvatar>{right ? '' : tenant.charAt(0)}</ChatAvatar>
+                  </MessageContainer>
+                );
+              })
+            }
+          </MessagesSection>
           <InputContainer>
             <Input>
               <input
@@ -289,7 +301,6 @@ export class MaintenanceRequestDetails extends React.PureComponent {
                 <SendIcon/>
               </button>
             </Input>
-            <ChatAvatar></ChatAvatar>
           </InputContainer>
         </StyledContainer>
       </Fragment>
