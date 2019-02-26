@@ -77,9 +77,15 @@ const MessageWrapper = styled.div`
   padding: 0.7rem 1rem;
   border-radius: ${props => props.right ? '1rem': '0'}  ${props => props.right ? '0': '1rem'} 1rem 1rem };
   text-align: left;
-  diretion: ltr !important;
-}
-`;
+  display: flex;
+  flex-direction: column;
+
+  img {
+    width: 25rem;
+    margin: 0.3rem 0;
+    border-radius: 0.5rem;
+  }
+}`;
 
 const DateLabel = styled.div`
   font-size: 0.8rem;
@@ -272,16 +278,18 @@ export class MaintenanceRequestDetails extends React.PureComponent {
                   ?
                   <MessageContainer key={item.timestamp}>
                     <ChatAvatar>{right ? '' : tenant.charAt(0)}</ChatAvatar>
-                    <MessageWrapper right={right}>
-                      {message}
+                    <MessageWrapper>
+                      {photo && <img src={photo}/>}
+                      <div>{message}</div>
                     </MessageWrapper>
                     <DateLabel>{dateString}</DateLabel>
                   </MessageContainer>
                   :
                   <MessageContainer key={item.timestamp} right>
                     <DateLabel>{dateString}</DateLabel>
-                    <MessageWrapper right={right}>
-                      {message}
+                    <MessageWrapper right>
+                      {photo && <img src={photo}/>}
+                      <div>{message}</div>
                     </MessageWrapper>
                     <ChatAvatar>{right ? '' : tenant.charAt(0)}</ChatAvatar>
                   </MessageContainer>
