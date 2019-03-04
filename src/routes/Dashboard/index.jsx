@@ -3,17 +3,19 @@ import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import styled from 'styled-components';
 import _ from 'lodash';
+import moment from 'moment';
 import { Container } from 'styled-minimal';
 import Chart from 'react-apexcharts';
 
 import Header from 'containers/Header';
 import SearchSection from 'containers/SearchSection';
 import { firebaseDatabase } from 'config/firebase';
-import { exportCSV } from 'modules/helpers';
+import { exportCSV, getCurrencyValue } from 'modules/helpers';
 import Table from 'components/Table';
 import Progress from 'components/Progress';
 import Segment from 'components/Segment';
 import SectionTitle from 'components/SectionTitle';
+import MonthSelect from 'components/MonthSelect';
 
 import PaymentProcessSection from './PaymentProcessSection';
 import { numberWithCommas } from 'modules/helpers';
@@ -25,6 +27,12 @@ const StyledContainer = styled(Container)`
   height: calc(100vh - 80px);
   overflow: auto;
   padding-bottom: 2rem;
+`;
+
+const SelectMonthSection = styled.div`
+  width: 100%;
+  text-align: right;
+  padding-top: 1rem;
 `;
 
 const BuildingSection = styled.div`
@@ -82,12 +90,17 @@ const DataSection = styled.div`
   }
 `;
 
-const ColDefs = [
+const PaymentProgressColDefs = [
+  { id: 'location', numeric: false, disablePadding: false, label: 'Location', sortable: true },
+  { id: 'progress', numeric: false, disablePadding: false, label: 'Progress', sortable: false },
+  { id: 'rentRoll', numeric: false, disablePadding: false, label: 'Rentroll', sortable: true },
+  { id: 'paid', numeric: false, disablePadding: false, label: 'Paid', sortable: true },
+];
+
+const OutstandingColDefs = [
   { id: 'name', numeric: false, disablePadding: false, label: 'Name', sortable: true },
-  { id: 'email', numeric: false, disablePadding: false, label: 'Email', sortable: false },
-  { id: 'address', numeric: false, disablePadding: false, label: 'Address', sortable: true },
-  { id: 'state', numeric: false, disablePadding: false, label: 'State', sortable: true },
-  { id: 'lease end', numeric: false, disablePadding: false, label: 'Lease End', sortable: true },
+  { id: 'status', numeric: false, disablePadding: false, label: 'Status', sortable: true },
+  { id: 'price', numeric: false, disablePadding: false, label: 'Balance', sortable: true },
 ];
 
 const SortColDefs = [
@@ -106,7 +119,7 @@ const chartOptions = {
     radialBar: {
       hollow: {
         margin: 0,
-        size: "60%",
+        size: "65%",
         background: "transparent"
       },
       track: {
@@ -119,16 +132,11 @@ const chartOptions = {
         },
       },
       dataLabels: {
-        name: {
-          offsetY: 0,
-          color: "transparent",
-          fontSize: "0px",
-          show: false
-        },
         value: {
           color: "#333333",
-          fontSize: "1.5rem",
-          show: true
+          fontSize: "35px",
+          show: true,
+          offsetY: -3
         }
       }
     }
@@ -161,60 +169,88 @@ export class Dashboard extends React.PureComponent {
     allData: [],
     sortColDefs: SortColDefs,
     loading: false,
-    rentRoll: 0
+    rentRoll: 0,
+    month: moment().format("MMMYYYY"),
   }
 
   componentDidMount() {
     this.setState({ loading: true });
-    this.refreshData();
   }
 
-  refreshData = () => {
-    firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENT_ADDRESSES).once('value').then((snapshot) => {
-      const addresses = snapshot.val();
-      firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).once('value').then((snapshot) => {
-        this.setState({ loading: false });
-        this.processRecords(snapshot.val(), addresses);
+  handleChange = name => event => {
+    this.setState({ [name]: event.target.value });
+  };
+
+  getPaymentProgress = () => {
+    const { residents, properties } = this.props;
+    const { month } = this.state;
+
+    const calculatedProperties = properties.map(property => {
+      const tenants = property.residents;
+      let rentRoll = 0;
+      let paid = 0;
+      tenants.forEach(tenant => {
+        let validTenant = tenant;
+        if (tenant.uid) {
+          const registeredResident = residents.find(resident => resident.id === tenant.uid);
+          if (registeredResident) {
+            console.log('Registered Resident', tenant);
+            validTenant = registeredResident;
+          }
+        }
+        rentRoll += parseFloat(validTenant.price) ? parseFloat(validTenant.price) : 0;
+        if (validTenant.paymentHistory && validTenant.paymentHistory[month]) {
+          const paidValue = getCurrencyValue(validTenant.paymentHistory[month]);
+          paid += paidValue ? paidValue : 0;
+          console.log('Paid Resident', tenant);
+          console.log('Paid Value', paidValue);
+        }
       });
-    });
-  }
 
-  processRecords = (records, addresses) => {
-    const allData = [];
-    const paidUsers = [];
-    const outstandingUsers = [];
-    let rentRoll = 0;
-    for (var key in records){
-      const item = records[key];
-      item.id = key;
-      item.city = item.City || item.city;
-      item.state = item.state || item.State;
-      item.image = item.img || item.image; 
-      item.address = addresses[key] ? addresses[key].Address : '';
-      if (item.price == 0) {
-        paidUsers.push(item);
-      } else if (item.price > 1) {
-        outstandingUsers.push(item);
-        rentRoll += item.price;
+      const progress = rentRoll ? Math.round((paid / rentRoll) * 100)  : 0;
+      return {
+        ...property,
+        rentRoll,
+        paid,
+        progress: progress + '%'
       }
-      allData.push(item);
-    }
-    const sortColDefs = this.state.sortColDefs;
-    sortColDefs.forEach(sortCol => {
-      const array = _.compact(_.map(_.uniqBy(allData, sortCol.id), (item) => item[sortCol.id]));
-      sortCol.array = array;
-    });
-
-    this.setState({ 
-      allData,
-      paidUsers,
-      outstandingUsers,
-      rentRoll,
-      sortColDefs,
-      paymentPercent: 70
-    });
+    })
+    console.log('calculatedProperties', calculatedProperties);
+    return calculatedProperties;
   }
 
+  getTotalStatics = (progressData) => {
+    let totalRentRoll = 0;
+    let totalPaid = 0;
+    progressData.forEach(property => {
+      totalRentRoll += property.rentRoll;
+      totalPaid += property.paid;
+    });
+    const totalProgress = totalRentRoll ? Math.round((totalPaid / totalRentRoll) * 100)  : 0;
+
+    return {
+      totalRentRoll,
+      totalPaid,
+      totalProgress
+    }
+  }
+
+  getOutstandingUsers = () => {
+    const { residents } = this.props;
+    const { month } = this.state;
+    const outstandingUsers = [];
+    residents.forEach(resident => {
+      let status = 'Outstanding';
+      if (resident.paymentHistory && resident.paymentHistory[month]) {
+        status = 'Paid';
+      }
+      outstandingUsers.push({
+        ...resident,
+        status
+      });
+    })
+    return outstandingUsers;
+  }
 
   handleExport = () => {
   }
@@ -222,34 +258,49 @@ export class Dashboard extends React.PureComponent {
   handleModal = showModal => () => {
     this.setState({ showModal })
   }
- 
-  
+
   render() {
-    const { loading, paidUsers, outstandingUsers, paymentPercent, rentRoll } = this.state;
+    const { isResidentsLoaded, isPropertiesLoaded } = this.props; 
+    const { month } = this.state;
+    const loading = !isResidentsLoaded || !isPropertiesLoaded;
+    const paymentProgressData = this.getPaymentProgress();
+    const {
+      totalRentRoll,
+      totalPaid,
+      totalProgress
+    } = this.getTotalStatics(paymentProgressData);
+
+    console.log(this.state);
     return (
       <Fragment>
-        <Progress loading={loading}/>
-        <Header 
+        <Progress loading={loading} />
+        <Header
           title="Dashboard"
           onExport={this.handleExport}
         />
         <StyledContainer>
+          <SelectMonthSection>
+            <MonthSelect 
+              value={month}
+              onChange={this.handleChange('month')}
+            />
+          </SelectMonthSection>
           <BuildingSection>
             <BuildingInfo>
-              <SectionTitle>Payment Process</SectionTitle>
+              <SectionTitle>Payment Progress</SectionTitle>
               <StatisticSection>
                 <GraphWrapper>
-                  <Chart options={chartOptions} series={[70]} type="radialBar" height="270" width="270" />
+                  <Chart options={chartOptions} series={[totalProgress]} type="radialBar" height="270" width="270" />
                 </GraphWrapper>
                 <DataSection>
                   <div>
-                    Rentroll: <strong>${numberWithCommas(rentRoll)}</strong>
+                    Rentroll: <strong>${numberWithCommas(totalRentRoll)}</strong>
                   </div>
                   <div>
-                    Paid: <strong>${numberWithCommas(rentRoll)}</strong>
+                    Paid: <strong>${numberWithCommas(totalPaid)}</strong>
                   </div>
                   <div>
-                    Outstanding: <strong>${numberWithCommas(rentRoll)}</strong>
+                    Outstanding: <strong>${numberWithCommas(totalRentRoll - totalPaid)}</strong>
                   </div>
                 </DataSection>
               </StatisticSection>
@@ -257,16 +308,18 @@ export class Dashboard extends React.PureComponent {
             <TransitInfo>
               <SectionTitle>In Transit</SectionTitle>
               <div>Funds in route to your bank account</div>
-              <span>${numberWithCommas(rentRoll)}</span>
+              <span>${numberWithCommas(11111)}</span>
             </TransitInfo>
           </BuildingSection>
           <PaymentProcessSection
-            title="Payment Process"
-            data={paidUsers}
+            title="Payment Progress"
+            data={paymentProgressData}
+            colDefs={PaymentProgressColDefs}
           />
           <PaymentProcessSection
             title="Outstanding Rent"
-            data={outstandingUsers}
+            data={this.getOutstandingUsers()}
+            colDefs={OutstandingColDefs}
           />
         </StyledContainer>
       </Fragment>
@@ -276,7 +329,13 @@ export class Dashboard extends React.PureComponent {
 
 /* istanbul ignore next */
 function mapStateToProps(state) {
-  return { user: state.user };
+  return { 
+    user: state.user,
+    isResidentsLoaded: state.data.isResidentsLoaded,
+    isPropertiesLoaded: state.data.isPropertiesLoaded,
+    residents: state.data.residents, 
+    properties: state.data.properties
+  };
 }
 
 export default connect(mapStateToProps)(Dashboard);

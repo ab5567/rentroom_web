@@ -13,6 +13,7 @@ import { firebaseDatabase } from 'config/firebase';
 import { exportCSV } from 'modules/helpers';
 import { FIRE_DATA_PATHS } from 'constants/index';
 import history from 'modules/history';
+import EditPropertyModal from './EditPropertyModal';
 
 const StyledContainer = styled(Container)`
   text-align: center;
@@ -37,61 +38,27 @@ const SearchColDefs = ['location'];
 export class Properties extends React.PureComponent {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
-    user: PropTypes.object.isRequired,
   };
 
   state = {
     order: 'asc',
     orderBy: 'name',
     selected: [],
-    allData: [],
-    data: [],
     searchTerm: '',
     page: 0,
     rowsPerPage: 10,
-    status: '',
-    sortColDefs: SortColDefs,
-    loading: false,
-    selectedItem: {}
+    selectedItem: {},
+    showAddPropertyModal: false
   }
 
-  componentDidMount() {
-    this.setState({ loading: true });
-    this.refreshData();
-  }
-
-  refreshData = () => {
-    firebaseDatabase.ref(FIRE_DATA_PATHS.PROPERTIES).once('value').then((snapshot) => {
-      this.setState({ loading: false });
-      this.processRecords(snapshot.val())
-    });
-  }
-
-  processRecords = (records) => {
-    const allData = [];
-    for (var key in records){
-      const item = {};
-      const object = records[key]['building '];
-      if (object) {
-        item.id = key;
-        item.location = key;
-        item.name = key;
-        item.city = object.City || object.city;
-        item.state = object.state || object.State;
-        item.photo = object.img || object.image; 
-        allData.push(item);
+  getSortColDefs = () => {
+    const { properties }  = this.props;
+    return SortColDefs.map(sortCol => {
+      const array = _.compact(_.map(_.uniqBy(properties, sortCol.id), (item) => item[sortCol.id]));
+      return {
+        ...sortCol,
+        array
       }
-    }
-    const sortColDefs = this.state.sortColDefs;
-    sortColDefs.forEach(sortCol => {
-      const array = _.compact(_.map(_.uniqBy(allData, sortCol.id), (item) => item[sortCol.id]));
-      sortCol.array = array;
-    });
-
-    this.setState({ 
-      allData,
-      data: allData,
-      sortColDefs
     });
   }
 
@@ -104,8 +71,6 @@ export class Properties extends React.PureComponent {
   }
 
   handleBulkDelete = () => {
-    this.setState({ loading: true });
-
     const { selected } = this.state; 
     const deletingItems = {};
     selected.forEach(id => {
@@ -116,30 +81,32 @@ export class Properties extends React.PureComponent {
         console.log('Bulk Delete Error', error);
         return;
       }
-      this.refreshData();
+      this.setState({ selected: [] });
     });;
   }
 
   handleEditItem = (itemId) => {
-    console.log('Edit item', itemId);
     history.push(`${this.props.match.url}/${itemId}`)
   }
 
   handleDeleteItem = (itemId) => {
-    this.setState({ loading: true });
-
+    console.log('Deleting Item', itemId);
     firebaseDatabase.ref(FIRE_DATA_PATHS.PROPERTIES).update({ [itemId]: null }).then((error) => {
       if (error) {
         console.log('Delete Error', error);
         return;
       }
-      this.refreshData();
-    });;
+    });
+  }
+
+  handlePropertyModal = showAddPropertyModal => () => {
+    this.setState({ showAddPropertyModal })
   }
 
   sortAndFilterArray = () => {
-    const { order, orderBy, allData, sortColDefs, searchTerm } = this.state;
-    const filterArray = allData.filter(item => {
+    const { properties }  = this.props;
+    const { order, orderBy, searchTerm } = this.state;
+    const filterArray = properties.filter(item => {
       let shouldShow = true;
       if (searchTerm) {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -149,7 +116,7 @@ export class Properties extends React.PureComponent {
         }); 
         shouldShow = shouldShow && includeSearchTerm;
       }
-      sortColDefs.forEach(sortCol => {
+      SortColDefs.forEach(sortCol => {
         const filterValue = this.state[sortCol.id];
         if (filterValue) {
           shouldShow = shouldShow && (item[sortCol.id] === filterValue)
@@ -161,21 +128,22 @@ export class Properties extends React.PureComponent {
     return _.orderBy(filterArray, [orderBy], [order]);
   }
 
-
-
   render() {
-    const { order, orderBy, selected, rowsPerPage, page, sortColDefs, loading } = this.state;
+    const { isPropertiesLoaded } = this.props;
+    const { order, orderBy, selected, rowsPerPage, page, showAddPropertyModal } = this.state;
     const data = this.sortAndFilterArray();
 
     return (
       <Fragment>
-        <Progress loading={loading}/>
+        <Progress loading={!isPropertiesLoaded}/>
         <Header 
           title="Properties"
           onExport={this.handleExport}
+          onAddNewEntry={this.handlePropertyModal(true)}
+          addButtonTitle="Add Property"
         />
         <SearchSection
-          sortColDefs={sortColDefs} 
+          sortColDefs={this.getSortColDefs()} 
           rowsLength={data.length}
           onChange={this.handleStateChange}
         />
@@ -189,10 +157,16 @@ export class Properties extends React.PureComponent {
             rowsPerPage={rowsPerPage}
             page={page}
             onChange={this.handleStateChange}
-            onEditItem={this.handleEditItem}
             onDeleteItem={this.handleDeleteItem}
+            onEditItem={this.handleEditItem}
+            onClickRow={this.handleEditItem}
           />
         </StyledContainer>
+        <EditPropertyModal
+          open={showAddPropertyModal}
+          data={{}}
+          onClose={this.handlePropertyModal(false)}
+        />
       </Fragment>
     );
   }
@@ -200,7 +174,10 @@ export class Properties extends React.PureComponent {
 
 /* istanbul ignore next */
 function mapStateToProps(state) {
-  return { user: state.user };
+  return { 
+    isPropertiesLoaded: state.data.isPropertiesLoaded,
+    properties: state.data.properties   
+  };
 }
 
 export default connect(mapStateToProps)(Properties);

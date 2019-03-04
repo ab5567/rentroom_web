@@ -13,6 +13,7 @@ import CurrencyInput from 'components/CurrencyInput';
 import PhoneInput from 'components/PhoneInput';
 import StateInput from 'components/StateInput';
 import CityInput from 'components/CityInput';
+import ErrorLabel from 'components/ErrorLabel';
 
 const TextFieldWrapper = styled.div`
   display: flex;
@@ -38,7 +39,8 @@ const ColDefs = [
   { id: 'phone', label: 'Phone', type: 'phone', editable: true },
   { id: 'state', label: 'State', type: 'state', editable: true },
   { id: 'city', label: 'City', type: 'city', editable: true },
-  { id: 'image', label: null, type: 'image', editable: true },
+  { id: 'image', label: null, type: 'image', editable: false },
+  { id: 'id', label: 'ID', type: 'text', editable: false },
 ];
 
 
@@ -52,7 +54,8 @@ export class AddEditResidentModal extends React.PureComponent {
 
   state = {
     isLoading: false,
-    data: this.props.data || {}
+    data: this.props.data || {},
+    error: null
   }
 
   componentDidUpdate(prevProps) {
@@ -117,11 +120,32 @@ export class AddEditResidentModal extends React.PureComponent {
   }
 
   handleChange = key => event => {
-    const newState = update(this.state, {data: {[key]: {$set: event.target.value}}});
+    const newState = update(this.state, {
+      data: {[key]: {$set: event.target.value}},
+      error: {$set: null},
+    });
     this.setState(newState);
   };
 
+  validation = () => {
+    let valid = true;
+    const validationCols = ColDefs.filter(col => col.editable);
+    validationCols.forEach(col => {
+      const filledItem = this.state.data[col.id];
+      if (!filledItem) {
+        console.log('Missing Item', col);
+        this.setState({ error: `${col.label} is empty.` });
+        valid = false;
+        return;
+      }
+    })
+    return valid;
+  }
+
   handleSave = () => {
+    if (!this.validation()) {
+      return;
+    }
     let id = this.props.data.id;
     if (!id) {
       id = firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).push().key;
@@ -134,7 +158,6 @@ export class AddEditResidentModal extends React.PureComponent {
         console.log('Save Error', error);
         return;
       }
-      this.props.onSave();
     });;
   }
 
@@ -143,8 +166,9 @@ export class AddEditResidentModal extends React.PureComponent {
   }
 
   render() {
-    const { isLoading } = this.state;
+    const { error } = this.state;
     const { open } = this.props;
+
     return (
         <Modal
           open={open}
@@ -162,6 +186,7 @@ export class AddEditResidentModal extends React.PureComponent {
                 </TextFieldWrapper>
               )
             }
+           {error && <ErrorLabel>{error}</ErrorLabel>}
           </ModalContent>
           <ModalActions
             onClose={this.handleClose}

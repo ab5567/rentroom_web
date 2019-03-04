@@ -40,6 +40,7 @@ class ExtendedTable extends React.Component {
     onChange: PropTypes.func,
     onEditItem: PropTypes.func,
     onDeleteItem: PropTypes.func,
+    onClickRow: PropTypes.func,
   }
 
   handleSelectAllClick = event => {
@@ -94,6 +95,12 @@ class ExtendedTable extends React.Component {
     }
   }
 
+  handlClickRow = itemId => () => {
+    if (this.props.onClickRow) {
+      this.props.onClickRow(itemId)
+    }
+  }
+
   isSelected = id => this.props.selected.indexOf(id) !== -1;
 
   render() {
@@ -129,7 +136,7 @@ class ExtendedTable extends React.Component {
                   tabIndex={-1}
                   key={item.id}
                   selected={isSelected}
-                  onClick={this.handleEditItem(item.id)}
+                  onClick={this.handlClickRow(item.id)}
                 >
                   {hasEditing &&
                     <TableCell padding="checkbox">

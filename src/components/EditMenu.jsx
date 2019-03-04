@@ -35,12 +35,14 @@ class EditMenu extends React.Component {
     this.setState({ anchorEl: null });
   };
 
-  handleEdit = () => {
+  handleEdit = (event) => {
+    event.stopPropagation();
     this.setState({ anchorEl: null });
     this.props.onEdit();
   }
 
-  handleDelete = () => {
+  handleDelete = (event) => {
+    event.stopPropagation();
     this.setState({ anchorEl: null });
     this.props.onDelete();
   }

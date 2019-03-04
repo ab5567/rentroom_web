@@ -4,21 +4,38 @@ import immutable from 'immutability-helper';
 import { ActionTypes } from 'constants/index';
 
 export const dataState = {
-  residents: {},
-  status: STATUS.IDLE,
+  isResidentsLoaded: false,
+  residents: [],
+  isAddressesLoaded: false,
+  addresses: {},
+  isPropertiesLoaded: false,
+  properties: [],
+  isMaintenanceLoaded: false,
+  maintenances: [],
 };
 
 export default {
   data: handleActions(
     {
-      [ActionTypes.FETCH_RESIDENTS]: state =>
-        immutable(state, {
-          status: { $set: STATUS.RUNNING },
-        }),
       [ActionTypes.FETCH_RESIDENTS_SUCCESS]: (state, action) => 
           immutable(state, {
-            status: { $set: STATUS.IDLE },
-            residents: { $set: action.payload.residents },
+            residents: { $set: action.payload },
+            isResidentsLoaded: { $set: true },
+          }),
+      [ActionTypes.FETCH_ADDRESSES_SUCCESS]: (state, action) => 
+          immutable(state, {
+            addresses: { $set: action.payload },
+            isAddressesLoaded: { $set: true },
+          }),
+      [ActionTypes.FETCH_PROPERTIES_SUCCESS]: (state, action) => 
+          immutable(state, {
+            properties: { $set: action.payload },
+            isPropertiesLoaded: { $set: true },
+          }),
+      [ActionTypes.FETCH_MAINTENANCES_SUCCESS]: (state, action) => 
+          immutable(state, {
+            maintenances: { $set: action.payload },
+            isMaintenanceLoaded: { $set: true },
           }),
     },
     dataState,

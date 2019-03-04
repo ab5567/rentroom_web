@@ -70,7 +70,6 @@ export class Maintenance extends React.PureComponent {
     });
   }
 
-
   processRecords = (records) => {
     const allData = [];
     for (var key in records){
@@ -202,6 +201,7 @@ export class Maintenance extends React.PureComponent {
             onChange={this.handleStateChange}
             onEditItem={this.handleEditItem}
             onDeleteItem={this.handleDeleteItem}
+            onClickRow={this.handleEditItem}
           />
         </StyledContainer>
       </Fragment>

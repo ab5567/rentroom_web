@@ -8,7 +8,7 @@ import { Container } from 'styled-minimal';
 import SearchSection from 'containers/SearchSection';
 import moment from 'moment';
 import update from 'immutability-helper';
-import { exportCSV } from 'modules/helpers';
+import { exportCSV, getCurrencyValue } from 'modules/helpers';
 import Header from 'containers/Header';
 import Table from 'components/Table';
 import { firebaseDatabase } from 'config/firebase';
@@ -20,8 +20,10 @@ import Avatar from '@material-ui/core/Avatar';
 import { FIRE_DATA_PATHS } from 'constants/index';
 import SendIcon from '@material-ui/icons/Send';
 import AddEditPropertyResidentModal from './AddEditPropertyResidentModal';
-import EditPropertyModal from './EditPropertyModal';
+import EditPropertyModal from '../EditPropertyModal';
 import { numberWithCommas } from 'modules/helpers';
+import MonthSelect from 'components/MonthSelect';
+
 
 const RightArrow = require('assets/media/images/right-arrow.png');
 
@@ -31,6 +33,12 @@ const StyledContainer = styled(Container)`
   height: calc(100vh - 160px);
   overflow: auto;
 `;
+
+const SelectMonthSection = styled.div`
+  width: 100%;
+  text-align: right;
+`;
+
 
 const BuildingSection = styled.div`
   width: 100%;
@@ -86,7 +94,7 @@ const chartOptions = {
     radialBar: {
       hollow: {
         margin: 0,
-        size: "60%",
+        size: "65%",
         background: "transparent"
       },
       track: {
@@ -99,16 +107,11 @@ const chartOptions = {
         },
       },
       dataLabels: {
-        name: {
-          offsetY: 0,
-          color: "transparent",
-          fontSize: "0px",
-          show: false
-        },
         value: {
           color: "#333333",
-          fontSize: "1.5rem",
-          show: true
+          fontSize: "35px",
+          show: true,
+          offsetY: -3
         }
       }
     }
@@ -147,8 +150,6 @@ export class PropertyDetail extends React.PureComponent {
   static propTypes = {
   };
 
-  _databaseRef;
-
   state = {
     order: 'asc',
     orderBy: 'name',
@@ -164,69 +165,23 @@ export class PropertyDetail extends React.PureComponent {
     selectedItem: {},
     paymentPercent: 0,
     showEditPropertyModal: false,
-    rentRoll: 0
+    rentRoll: 0,
+    month: moment().format("MMMYYYY"),
   }
 
-  componentDidMount() {
-    const id = this.props.match.params.id;
-    if (id === 'new') {
-      return;
+
+  getSortColDefs = () => {
+    const { isPropertyLoaded, property } = this.props;
+    if (!isPropertyLoaded) {
+      return SortColDefs;
     }
-
-    this.setState({
-      loading: true
-    });
-
-    firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).once('value').then((snapshot) => {
-      const residents = snapshot.val();
-      this.refreshData(residents);
-    });
-  }
-
-  refreshData = (users) => {
-    const id = this.props.match.params.id;
-    const firebasePath = `${FIRE_DATA_PATHS.PROPERTIES}/${id}`;
-    this._databaseRef = firebaseDatabase.ref(firebasePath);
-    this._databaseRef.once('value').then((snapshot) => {
-      this.setState({ loading: false });
-      if (users) {
-        this.setState({ users });
+    return SortColDefs.map(sortCol => {
+      const array = _.compact(_.map(_.uniqBy(property.residents, sortCol.id), (item) => item[sortCol.id]));
+      return {
+        ...sortCol,
+        array
       }
-      this.processData(snapshot.val());
     });
-  }
-
-  processData = (data) => {
-    console.log('Record', data);
-    const item = {};
-    const building = data['building '];
-    item.city = building.City || building.city;
-    item.state = building.state || building.State;
-    item.photo = building.img || building.image;
-
-    const residents = [];
-    let rentRoll = 0;
-    for (var key in data.residents) {
-      const resident = data.residents[key];
-      if (resident) {
-        resident.id = key;
-        residents.push(resident);
-        rentRoll += resident.price;
-      }
-    }
-    const sortColDefs = this.state.sortColDefs;
-    sortColDefs.forEach(sortCol => {
-      const array = _.compact(_.map(_.uniqBy(residents, sortCol.id), (item) => item[sortCol.id]));
-      sortCol.array = array;
-    });
-    this.setState({
-      ...item,
-      residents,
-      sortColDefs,
-      selected: [],
-      rentRoll,
-      paymentPercent: 70
-    })
   }
 
   handleStateChange = (state) => {
@@ -256,7 +211,12 @@ export class PropertyDetail extends React.PureComponent {
   }
 
   handleEditItem = (itemId) => {
-    const selectedItem = this.state.residents.find(item => item.id === itemId);
+    const { isPropertyLoaded, isResidentsLoaded } = this.props;
+    if (!isPropertyLoaded || !isResidentsLoaded) {
+      return;
+    }
+    const { allValidResidents } = this.sortAndFilterArray();
+    const selectedItem = allValidResidents.find(item => item.id === itemId);
     this.setState({
       showModal: true,
       selectedItem
@@ -271,14 +231,12 @@ export class PropertyDetail extends React.PureComponent {
   }
 
   handleDeleteItem = (itemId) => {
-    this.setState({ loading: true });
     const propertyId = this.props.match.params.id;
     firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/residents`).update({ [itemId]: null }).then((error) => {
       if (error) {
         console.log('Delete Error', error);
         return;
       }
-      this.refreshData();
     });;
   }
 
@@ -294,9 +252,48 @@ export class PropertyDetail extends React.PureComponent {
     this.setState({ showEditPropertyModal })
   }
 
+  handleChange = name => event => {
+    this.setState({ [name]: event.target.value });
+  };
+
   sortAndFilterArray = () => {
-    const { order, orderBy, residents, sortColDefs, searchTerm } = this.state;
-    const filterArray = residents.filter(item => {
+    const { isPropertyLoaded, property, isResidentsLoaded, residents } = this.props;
+    const { order, orderBy, searchTerm, month } = this.state;
+
+    if (!isPropertyLoaded || !isResidentsLoaded || !property.residents) {
+      return {
+        residents: [],
+        rentRoll: 0,
+        paid: 0,
+        progress: 0,
+        allValidResidents: []
+      };
+    }
+
+    const validResidents = [];
+    let rentRoll = 0;
+    let paid = 0;
+    property.residents.forEach(tenant => {
+      let validTenant = tenant;
+      if (tenant.uid) {
+        const registeredResident = residents.find(resident => resident.id === tenant.uid);
+        if (registeredResident) {
+          validTenant = {
+            ...registeredResident,
+            uid: tenant.uid,
+            id: tenant.id
+          }
+        }
+      }
+      rentRoll += parseFloat(validTenant.price) ? parseFloat(validTenant.price) : 0;
+      if (validTenant.paymentHistory && validTenant.paymentHistory[month]) {
+        const paidValue = getCurrencyValue(validTenant.paymentHistory[month]);
+        paid += paidValue ? paidValue : 0;
+      }
+      validResidents.push(validTenant);
+    });
+
+    const filterArray = validResidents.filter(item => {
       let shouldShow = true;
       if (searchTerm) {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -306,7 +303,7 @@ export class PropertyDetail extends React.PureComponent {
         });
         shouldShow = shouldShow && includeSearchTerm;
       }
-      sortColDefs.forEach(sortCol => {
+      SortColDefs.forEach(sortCol => {
         const filterValue = this.state[sortCol.id];
         if (filterValue) {
           shouldShow = shouldShow && (item[sortCol.id] === filterValue)
@@ -315,30 +312,35 @@ export class PropertyDetail extends React.PureComponent {
       return shouldShow;
     });
 
-    return _.orderBy(filterArray, [orderBy], [order]);
+    const progress = rentRoll ? Math.round((paid / rentRoll) * 100)  : 0;
+
+    return {
+      residents: _.orderBy(filterArray, [orderBy], [order]),
+      rentRoll,
+      paid,
+      progress,
+      allValidResidents: validResidents
+    };
   }
 
   render() {
+    const { property, isPropertyLoaded } = this.props;
+    const { photo, city, state } = property;
     const {
-      loading,
-      photo,
-      city,
-      state,
       order,
       orderBy,
       selected,
       rowsPerPage,
       page,
-      sortColDefs,
-      rentRoll,
-      paymentPercent
+      month
     } = this.state;
 
     console.log('State', this.state);
+    console.log('Props', this.props);
 
     const { id } = this.props.match.params;
-    const data = this.sortAndFilterArray();
-    console.log('data', data);
+    const { residents, rentRoll, paid, progress } = this.sortAndFilterArray();
+    
     const propertyData = {
       image: photo,
       city,
@@ -347,38 +349,46 @@ export class PropertyDetail extends React.PureComponent {
 
     return (
       <Fragment>
-        <Progress loading={loading}/>
+        <Progress loading={!isPropertyLoaded}/>
         <Header
           title="Property Details"
           onAddNewEntry={this.handleAddNewEntry}
           onExport={this.handleExport}
           bulkDeleteDisabled={selected.length === 0}
           onBulkDelete={this.handleBulkDelete}
-          onEditProperty={this.handleEditProperty}
+          onEdit={this.handleEditProperty}
+          editButtonTitle="Edit Property"
+          addButtonTitle="Add New Tenant"
         />
         <SearchSection
-          sortColDefs={sortColDefs}
-          rowsLength={data.length}
+          sortColDefs={this.getSortColDefs()}
+          rowsLength={residents.length}
           onChange={this.handleStateChange}
         />
         <StyledContainer>
+          <SelectMonthSection>
+            <MonthSelect 
+              value={month}
+              onChange={this.handleChange('month')}
+            />
+          </SelectMonthSection>
           <BuildingSection>
             <img src={photo} alt={id} />
             <BuildingInfo>
               <SectionTitle>{id}</SectionTitle>
               <StatisticSection>
                 <GraphWrapper>
-                  <Chart options={chartOptions} series={[paymentPercent]} type="radialBar" height="270" width="270" />
+                  <Chart options={chartOptions} series={[progress]} type="radialBar" height="270" width="270" />
                 </GraphWrapper>
                 <DataSection>
                   <div>
                     Rentroll: <strong>${numberWithCommas(rentRoll)}</strong>
                   </div>
                   <div>
-                    Paid: <strong>${numberWithCommas(rentRoll)}</strong>
+                    Paid: <strong>${numberWithCommas(paid)}</strong>
                   </div>
                   <div>
-                    Outstanding: <strong>${numberWithCommas(rentRoll)}</strong>
+                    Outstanding: <strong>${numberWithCommas(rentRoll - paid)}</strong>
                   </div>
                 </DataSection>
               </StatisticSection>
@@ -388,7 +398,7 @@ export class PropertyDetail extends React.PureComponent {
             <SectionTitle>Residents</SectionTitle>
             <Table
               colDefs={ColDefs}
-              data={data}
+              data={residents}
               order={order}
               orderBy={orderBy}
               selected={selected}
@@ -405,14 +415,12 @@ export class PropertyDetail extends React.PureComponent {
           open={this.state.showModal}
           data={this.state.selectedItem}
           onClose={this.handleModal(false)}
-          onSave={this.refreshData}
         />
         <EditPropertyModal
           open={this.state.showEditPropertyModal}
           propertyId={id}
           data={propertyData}
           onClose={this.handlePropertyModal(false)}
-          onSave={this.refreshData}
         />
       </Fragment>
     );
@@ -420,8 +428,15 @@ export class PropertyDetail extends React.PureComponent {
 }
 
 /* istanbul ignore next */
-function mapStateToProps(state) {
-  return { user: state.user };
+function mapStateToProps(state, props) {
+  const propertyId = props.match.params.id;
+  const property = state.data.properties.find(property => property.id === propertyId) || {};
+  return { 
+    isPropertyLoaded: state.data.isPropertiesLoaded,
+    property,
+    isResidentsLoaded: state.data.isResidentsLoaded,
+    residents: state.data.residents 
+  };
 }
 
 export default connect(mapStateToProps)(PropertyDetail);

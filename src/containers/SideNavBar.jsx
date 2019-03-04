@@ -50,8 +50,8 @@ const UserSection = styled.div`
   }
 
   span {
-    margin-left: 10px;
-    font-size: 1rem;
+    font-size: 1.7rem;
+    font-weight: bold;
   }
 
   img {
@@ -122,9 +122,10 @@ class SideNavBar extends React.PureComponent {
     return (
       <Nav>
         <UserSection>
-          <div></div>
+          <span>RENT ROOM</span>
+          {/* <div></div> */}
           {/* <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" className={classes.avatar} /> */}
-          <span>{user.email}</span>
+          {/* <span>{user.email}</span> */}
         </UserSection>
         <MenuLink to="/fireadmin/dashboard" exact={true} activeClassName="selected">
           <span>Dashboard</span>

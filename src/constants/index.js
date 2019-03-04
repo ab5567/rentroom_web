@@ -25,8 +25,11 @@ export const ActionTypes = keyMirror({
   HIDE_ALERT: undefined,
   FETCH_USER: undefined,
   FETCH_RESIDENTS: undefined,
-  FETCH_RESIDENTS_SUCCESS: undefined,
   FETCH_RESIDENTS_FAILURE: undefined,
+  FETCH_RESIDENTS_SUCCESS: undefined,
+  FETCH_ADDRESSES_SUCCESS: undefined,
+  FETCH_PROPERTIES_SUCCESS: undefined,
+  FETCH_MAINTENANCES_SUCCESS: undefined,
 });
 
 /**

@@ -12,6 +12,8 @@ import { FIRE_DATA_PATHS } from 'constants/index';
 import Button from 'components/Button';
 import StateInput from 'components/StateInput';
 import CityInput from 'components/CityInput';
+import ErrorLabel from 'components/ErrorLabel';
+
 
 const TextFieldWrapper = styled.div`
   display: flex;
@@ -57,16 +59,23 @@ const ImageWrapper = styled.div`
 `;
 
 
-const ColDefs = [
+const AddColDefs = [
+  { id: 'image', label: 'Image', type: 'image', editable: true },
+  { id: 'location', label: 'Location', type: 'text', editable: true },
   { id: 'state', label: 'State', type: 'state', editable: true },
   { id: 'city', label: 'City', type: 'city', editable: true },
-  { id: 'image', label: null, type: 'image', editable: true },
+];
+
+const EditColDefs = [
+  { id: 'image', label: 'Image', type: 'image', editable: true },
+  { id: 'state', label: 'State', type: 'state', editable: true },
+  { id: 'city', label: 'City', type: 'city', editable: true },
 ];
 
 export class EditPropertyModal extends React.PureComponent {
   static propTypes = {
     open: PropTypes.bool.isRequired,
-    propertyId: PropTypes.string.isRequired,
+    propertyId: PropTypes.string,
     data: PropTypes.object,
     onSave: PropTypes.func,
     onClose: PropTypes.func
@@ -74,7 +83,8 @@ export class EditPropertyModal extends React.PureComponent {
 
   state = {
     loading: false,
-    data: this.props.data || {}
+    data: this.props.data || {},
+    error: null
   }
 
   componentDidUpdate(prevProps) {
@@ -104,7 +114,7 @@ export class EditPropertyModal extends React.PureComponent {
             fullWidth
           />
         )
-      default: 
+      case 'text': 
         return (
           <TextField
             id={colDef.id}
@@ -118,23 +128,69 @@ export class EditPropertyModal extends React.PureComponent {
         )
     }
   }
-
   handleChange = key => event => {
-    const newState = update(this.state, {data: {[key]: {$set: event.target.value}}});
+    const newState = update(this.state, {
+      data: {[key]: {$set: event.target.value}},
+      error: {$set: null},
+    });
     this.setState(newState);
   };
 
-  handleSave = () => {
-    const { propertyId } = this.props; 
-    const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/building `);
-    ref.update(this.state.data).then((error) => {
-      this.handleClose();
-      if (error) {
-        console.log('Save Error', error);
+  validation = () => {
+    let valid = true;
+    const colDefs = this.props.propertyId ? EditColDefs : AddColDefs;
+    const validationCols =  colDefs.filter(col => col.editable);
+    validationCols.forEach(col => {
+      const filledItem = this.state.data[col.id];
+      if (!filledItem) {
+        console.log('Missing Item', col);
+        this.setState({ error: `${col.label} is empty.` });
+        valid = false;
         return;
       }
-      this.props.onSave();
-    });;
+    })
+    return valid;
+  }
+
+  handleSave = () => {
+    if (!this.validation()) {
+      return;
+    }
+    const { propertyId, onSave } = this.props; 
+    if (propertyId) {
+      const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/building `);
+      ref.update(this.state.data).then((error) => {
+        this.handleClose();
+        if (error) {
+          console.log('Save Error', error);
+          return;
+        }
+        if (onSave) {
+          onSave()
+        }
+      });
+    } else {
+      const { location, city, image, state } = this.state.data;
+      const newProperty = {
+        [location]: {
+          'building ': {
+              city,
+              image,
+              state
+            },
+          residents: []
+        }
+      }
+      const ref = firebaseDatabase.ref(FIRE_DATA_PATHS.PROPERTIES);
+      ref.update(newProperty).then((error) => {
+        this.handleClose();
+        if (error) {
+          console.log('Save Error', error);
+          return;
+        }
+      });
+    }
+
   }
 
   handleImageSelect = (e) => {
@@ -171,8 +227,10 @@ export class EditPropertyModal extends React.PureComponent {
   }
 
   render() {
-    const { loading, data } = this.state;
+    const { loading, data, error } = this.state;
     const { open, propertyId } = this.props;
+    const colDefs = propertyId ? EditColDefs.slice(1) : AddColDefs.slice(1);
+    const title = propertyId ? `Edit Property: ${propertyId}` : 'Add Property';
     
     return (
         <Modal
@@ -182,7 +240,7 @@ export class EditPropertyModal extends React.PureComponent {
           maxWidth="md"
         >
           <Progress loading={loading}/>
-          <ModalTitle>Edit Property: {propertyId}</ModalTitle>
+          <ModalTitle>{title}</ModalTitle>
           <ModalContent>
             <ImageWrapper>
               <label>Image</label>
@@ -203,13 +261,14 @@ export class EditPropertyModal extends React.PureComponent {
             </ImageWrapper>
 
             {
-              ColDefs.filter(colDef => colDef.label).map(colDef => 
+              colDefs.filter(colDef => colDef.label).map(colDef => 
                 <TextFieldWrapper key={colDef.id}>
                   <label>{colDef.label}</label>
                   {this.renderInput(colDef)}
                 </TextFieldWrapper>
               )
             }
+            {error && <ErrorLabel>{error}</ErrorLabel>}
           </ModalContent>
           <ModalActions
             onClose={this.handleClose}

@@ -12,6 +12,8 @@ import CurrencyInput from 'components/CurrencyInput';
 import PhoneInput from 'components/PhoneInput';
 import StateInput from 'components/StateInput';
 import CityInput from 'components/CityInput';
+import ErrorLabel from 'components/ErrorLabel';
+
 
 import { FIRE_DATA_PATHS } from 'constants/index';
 
@@ -40,7 +42,7 @@ const ColDefs = [
   { id: 'phone', label: 'Phone', type: 'phone', editable: true },
   { id: 'state', label: 'State', type: 'state', editable: true },
   { id: 'city', label: 'City', type: 'city', editable: true },
-  { id: 'image', label: null, type: 'image', editable: true },
+  { id: 'image', label: null, type: 'image', editable: false },
 ];
 
 
@@ -54,8 +56,8 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
   };
 
   state = {
-    isLoading: false,
-    data: this.props.data || {}
+    data: this.props.data || {},
+    error: null
   }
 
   componentDidUpdate(prevProps) {
@@ -65,19 +67,53 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
   }
 
   handleChange = key => event => {
-    const newState = update(this.state, {data: {[key]: {$set: event.target.value}}});
+    const newState = update(this.state, {
+      data: {[key]: {$set: event.target.value}},
+      error: {$set: null},
+    });
     this.setState(newState);
   };
 
+  validation = () => {
+    let valid = true;
+    const validationCols = ColDefs.filter(col => col.editable);
+    validationCols.forEach(col => {
+      const filledItem = this.state.data[col.id];
+      if (!filledItem) {
+        console.log('Missing Item', col);
+        this.setState({ error: `${col.label} is empty.` });
+        valid = false;
+        return;
+      }
+    })
+    return valid;
+  }
+
+
   handleSave = () => {
-    let { propertyId } = this.props;
-    let id = this.props.data.id;
+    if (!this.validation()) {
+      return;
+    }
+    let { data, propertyId } = this.props;
+    let id = data.id;
     if (!id) {
       id = firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/residents`).push().key;
       console.log('New Key', id);
     } 
     console.log('Saving DAta', this.state.data);
     console.log('Saving props', this.props);
+
+    if (data.uid) {
+      const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.RESIDENTS}/${data.uid}`);
+      ref.update(this.state.data).then((error) => {
+        this.handleClose();
+        if (error) {
+          console.log('Save Error', error);
+          return;
+        }
+      });;
+      return
+    }
 
     const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/residents/${id}`);
     ref.update(this.state.data).then((error) => {
@@ -86,11 +122,11 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
         console.log('Save Error', error);
         return;
       }
-      this.props.onSave();
-    });;
+    });
   }
 
   handleClose = () => {
+    this.setState({ error: null })
     this.props.onClose();
   }
 
@@ -149,8 +185,8 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
   }
 
   render() {
-    const { isLoading } = this.state;
-    const { open } = this.props;
+    const { open, data } = this.props;
+    const { error } = this.state;
     return (
         <Modal
           open={open}
@@ -158,7 +194,7 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
           fullWidth
           maxWidth="md"
         >
-          <ModalTitle>Edit Resident</ModalTitle>
+          <ModalTitle>{data.id ? 'Edit': 'Add'} Resident</ModalTitle>
           <ModalContent>
             {
               ColDefs.filter(colDef => colDef.label).map(colDef => 
@@ -168,6 +204,7 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
                 </TextFieldWrapper>
               )
             }
+            {error && <ErrorLabel>{error}</ErrorLabel>}
           </ModalContent>
           <ModalActions
             onClose={this.handleClose}

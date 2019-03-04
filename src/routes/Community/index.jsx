@@ -126,8 +126,6 @@ export class Community extends React.PureComponent {
       showModal: true,
       selectedItem
     });
-    // console.log('Edit item', itemId);
-    // history.push(`${this.props.match.url}/${itemId}`)
   }
 
   handleDeleteItem = (itemId) => {
@@ -147,7 +145,6 @@ export class Community extends React.PureComponent {
       showModal: true,
       selectedItem: { userId: this.props.user.uid }
     });
-    // history.push(`${this.props.match.url}/new`)
   }
 
   handleModal = (showModal) => {
@@ -213,8 +210,8 @@ export class Community extends React.PureComponent {
         <AddEditCommunityModal
           open={this.state.showModal}
           data={this.state.selectedItem}
-          onClose={() => this.handleModal(false)}
           onSave={this.refreshData}
+          onClose={() => this.handleModal(false)}
         />
       </Fragment>
     );

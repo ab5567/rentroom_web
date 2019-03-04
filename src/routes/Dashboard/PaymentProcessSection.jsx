@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import React, { Fragment } from 'react';
 import styled from 'styled-components';
 import _ from 'lodash';
+import history from 'modules/history';
 
 import Table from 'components/Table';
 import Segment from 'components/Segment';
@@ -18,12 +19,6 @@ const Header = styled.div`
   justify-content: space-between;
   align-items: center;
 `;
-
-const ColDefs = [
-  { id: 'name', numeric: false, disablePadding: false, label: 'Name', sortable: true },
-  { id: 'address', numeric: false, disablePadding: false, label: 'Address', sortable: true },
-  { id: 'price', numeric: false, disablePadding: false, label: 'Balance', sortable: true },
-];
 
 export default class PaymentProcessSection extends React.PureComponent {
   static propTypes = {
@@ -52,8 +47,15 @@ export default class PaymentProcessSection extends React.PureComponent {
 		this.setState({ [key]: value });
   }
 
-  render() {
+  handleRowClick = (itemId) => {
     const { title } = this.props;
+    if (title === 'Payment Progress') {
+      history.push(`/fireadmin/properties/${itemId}`);
+    }
+  }
+
+  render() {
+    const { title, colDefs } = this.props;
     const { order, orderBy, rowsPerPage, page } = this.state;
     const data = this.sortAndFilterArray();
 
@@ -79,7 +81,7 @@ export default class PaymentProcessSection extends React.PureComponent {
           />
         </Header>
         <Table
-          colDefs={ColDefs}
+          colDefs={colDefs}
           data={data}
           order={order}
           orderBy={orderBy}
@@ -87,6 +89,7 @@ export default class PaymentProcessSection extends React.PureComponent {
           page={page}
           selected={[]}
           onChange={this.handleStateChange}
+          onClickRow={this.handleRowClick}
         />
       </Container>
     );

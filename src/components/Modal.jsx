@@ -42,13 +42,13 @@ const ModalBottomSection = styled(DialogActions)`
 
 export const ModalActions = (props) => (
   <ModalBottomSection>
-    <Button onClick={props.onSave} color="default">
-      Save
-      <SaveIcon/>
-    </Button>
     <Button onClick={props.onClose} color="default">
       Close
       <CloseIcon/>
+    </Button>
+    <Button onClick={props.onSave} color="default">
+      Save
+      <SaveIcon/>
     </Button>
   </ModalBottomSection>
 );

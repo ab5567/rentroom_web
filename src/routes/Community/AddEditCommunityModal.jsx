@@ -10,7 +10,7 @@ import Modal, { ModalTitle, ModalContent, ModalActions } from 'components/Modal'
 import Progress from 'components/Progress';
 import { FIRE_DATA_PATHS } from 'constants/index';
 import CityInput from 'components/CityInput';
-
+import ErrorLabel from 'components/ErrorLabel';
 
 const TextFieldWrapper = styled.div`
   display: flex;
@@ -44,7 +44,8 @@ export class AddEditCommunityModal extends React.PureComponent {
 
   state = {
     isLoading: false,
-    data: this.props.data || {}
+    data: this.props.data || {},
+    error: null
   }
 
   componentDidUpdate(prevProps) {
@@ -82,11 +83,31 @@ export class AddEditCommunityModal extends React.PureComponent {
 
 
   handleChange = key => event => {
-    const newState = update(this.state, {data: {[key]: {$set: event.target.value}}});
+    const newState = update(this.state, {
+      data: {[key]: {$set: event.target.value}},
+      error: {$set: null},
+    });
     this.setState(newState);
   };
 
+  validation = () => {
+    let valid = true;
+    const validationCols = ColDefs.filter(col => col.editable);
+    validationCols.forEach(col => {
+      const filledItem = this.state.data[col.id];
+      if (!filledItem) {
+        this.setState({ error: `${col.label} is empty.` });
+        valid = false;
+        return;
+      }
+    })
+    return valid;
+  }
+
   handleSave = () => {
+    if (!this.validation()) {
+      return;
+    }
     let id = this.props.data.id;
     if (!id) {
       id = firebaseDatabase.ref(FIRE_DATA_PATHS.COMMUNITY).push().key;
@@ -104,11 +125,12 @@ export class AddEditCommunityModal extends React.PureComponent {
   }
 
   handleClose = () => {
+    this.setState({ error: null })
     this.props.onClose();
   }
 
   render() {
-    const { isLoading } = this.state;
+    const { isLoading, error } = this.state;
     const { open, data } = this.props;
     return (
         <Modal
@@ -117,7 +139,7 @@ export class AddEditCommunityModal extends React.PureComponent {
           fullWidth
           maxWidth="md"
         >
-          <ModalTitle>{`${data.id ? 'Edit' : 'New'} Community`}</ModalTitle>
+          <ModalTitle>{`${data.id ? 'Edit' : 'New'} Community Post`}</ModalTitle>
           <ModalContent>
             {
               ColDefs.filter(colDef => colDef.label).map(colDef => 
@@ -127,6 +149,7 @@ export class AddEditCommunityModal extends React.PureComponent {
                 </TextFieldWrapper>
               )
             }
+            {error && <ErrorLabel>{error}</ErrorLabel>}
           </ModalContent>
           <ModalActions
             onClose={this.handleClose}

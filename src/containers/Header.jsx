@@ -54,30 +54,32 @@ class Header extends React.PureComponent {
   static propTypes = {
     title: PropTypes.string.isRequired,
     bulkDeleteDisabled: PropTypes.bool,
+    addButtonTitle: PropTypes.string,
+    editButtonTitle: PropTypes.string,
     onPrint: PropTypes.func,
     onExport: PropTypes.func,
     onAddNewEntry: PropTypes.func,
     onBulkDelete: PropTypes.func,
     onSave: PropTypes.func,
-    onEditProperty: PropTypes.func
+    onEdit: PropTypes.func
   };
 
   render() {
-    const { title, onPrint, onExport, onAddNewEntry, onBulkDelete, onSave, bulkDeleteDisabled, onEditProperty } = this.props;
+    const { title, onPrint, onExport, onAddNewEntry, onBulkDelete, onSave, bulkDeleteDisabled, onEdit, addButtonTitle, editButtonTitle } = this.props;
     return (
       <Wrapper>
         <Container>
           <Title>{title}</Title>
           <ButtonsWrapper>
-            {onEditProperty && 
-              <Button variant="contained" color="default" onClick={onEditProperty}>
-                Edit Property
+            {onEdit && 
+              <Button variant="contained" color="default" onClick={onEdit}>
+                {editButtonTitle || 'Edit'}
                 <EditIcon />
               </Button>
             }
             {onAddNewEntry && 
               <Button variant="contained" color="default" onClick={onAddNewEntry}>
-                Add New Entry
+                {addButtonTitle || 'Add New Entry'}
                 <AddIcon />
               </Button>
             }
