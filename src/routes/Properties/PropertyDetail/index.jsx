@@ -23,6 +23,7 @@ import AddEditPropertyResidentModal from './AddEditPropertyResidentModal';
 import EditPropertyModal from '../EditPropertyModal';
 import { numberWithCommas } from 'modules/helpers';
 import MonthSelect from 'components/MonthSelect';
+import Grid from '@material-ui/core/Grid';
 
 
 const RightArrow = require('assets/media/images/right-arrow.png');
@@ -30,8 +31,8 @@ const RightArrow = require('assets/media/images/right-arrow.png');
 
 const StyledContainer = styled(Container)`
   text-align: center;
-  height: calc(100vh - 160px);
-  overflow: auto;
+  // height: calc(100vh - 160px);
+  // overflow: auto;
 `;
 
 const SelectMonthSection = styled.div`
@@ -39,11 +40,8 @@ const SelectMonthSection = styled.div`
   text-align: right;
 `;
 
-
-const BuildingSection = styled.div`
-  width: 100%;
-  display: flex;
-  margin-top: 2rem;
+const BuildingSection = styled(Grid)`
+  margin-top: 2rem !important;
   
   img {
     height: 19rem;
@@ -63,7 +61,7 @@ const GraphWrapper = styled.div`
 const BuildingInfo = styled(Segment)`
   flex: 1;
   text-align: left;
-  margin-left: 2rem;
+  height: 100%;
 `;
 
 const StatisticSection = styled.div`
@@ -133,17 +131,13 @@ const chartOptions = {
 
 const ColDefs = [
   { id: 'name', numeric: false, disablePadding: false, label: 'Name', sortable: true },
-  { id: 'email', numeric: false, disablePadding: false, label: 'Email', sortable: false },
-  { id: 'lease start', numeric: false, disablePadding: false, label: 'Lease Start', sortable: true },
-  { id: 'lease end', numeric: false, disablePadding: false, label: 'Lease End', sortable: true },
+  { id: 'price', numeric: false, disablePadding: false, label: 'Ballance', sortable: true },
 ];
 
 const SortColDefs = [
-  { id: 'lease end', label: 'Lease End', array: [] },
-  { id: 'lease start', label: 'Lease Start', array: [] },
 ];
 
-const SearchColDefs = ['name', 'email'];
+const SearchColDefs = ['name'];
 
 
 export class PropertyDetail extends React.PureComponent {
@@ -189,7 +183,8 @@ export class PropertyDetail extends React.PureComponent {
   }
 
   handleExport = () => {
-    exportCSV(ColDefs, this.sortAndFilterArray(), 'Property_Residents');
+    const { allValidResidents } = this.sortAndFilterArray();
+    exportCSV(ColDefs, allValidResidents, 'Property_Residents');
   }
 
   handleBulkDelete = () => {
@@ -372,27 +367,31 @@ export class PropertyDetail extends React.PureComponent {
               onChange={this.handleChange('month')}
             />
           </SelectMonthSection>
-          <BuildingSection>
-            <img src={photo} alt={id} />
-            <BuildingInfo>
-              <SectionTitle>{id}</SectionTitle>
-              <StatisticSection>
-                <GraphWrapper>
-                  <Chart options={chartOptions} series={[progress]} type="radialBar" height="270" width="270" />
-                </GraphWrapper>
-                <DataSection>
-                  <div>
-                    Rentroll: <strong>${numberWithCommas(rentRoll)}</strong>
-                  </div>
-                  <div>
-                    Paid: <strong>${numberWithCommas(paid)}</strong>
-                  </div>
-                  <div>
-                    Outstanding: <strong>${numberWithCommas(rentRoll - paid)}</strong>
-                  </div>
-                </DataSection>
-              </StatisticSection>
-            </BuildingInfo>
+          <BuildingSection container spacing={16}>
+            <Grid item>
+              <img src={photo} alt={id} />
+            </Grid>
+            <Grid item xs>
+              <BuildingInfo>
+                <SectionTitle>{id}</SectionTitle>
+                <StatisticSection>
+                  <GraphWrapper>
+                    <Chart options={chartOptions} series={[progress]} type="radialBar" height="270" width="270" />
+                  </GraphWrapper>
+                  <DataSection>
+                    <div>
+                      Rentroll: <strong>${numberWithCommas(rentRoll)}</strong>
+                    </div>
+                    <div>
+                      Paid: <strong>${numberWithCommas(paid)}</strong>
+                    </div>
+                    <div>
+                      Outstanding: <strong>${numberWithCommas(rentRoll - paid)}</strong>
+                    </div>
+                  </DataSection>
+                </StatisticSection>
+              </BuildingInfo>
+            </Grid>
           </BuildingSection>
           <ResidentsSection>
             <SectionTitle>Residents</SectionTitle>

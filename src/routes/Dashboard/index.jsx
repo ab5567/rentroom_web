@@ -8,10 +8,7 @@ import { Container } from 'styled-minimal';
 import Chart from 'react-apexcharts';
 
 import Header from 'containers/Header';
-import SearchSection from 'containers/SearchSection';
-import { firebaseDatabase } from 'config/firebase';
-import { exportCSV, getCurrencyValue } from 'modules/helpers';
-import Table from 'components/Table';
+import { getCurrencyValue } from 'modules/helpers';
 import Progress from 'components/Progress';
 import Segment from 'components/Segment';
 import SectionTitle from 'components/SectionTitle';
@@ -19,12 +16,12 @@ import MonthSelect from 'components/MonthSelect';
 
 import PaymentProcessSection from './PaymentProcessSection';
 import { numberWithCommas } from 'modules/helpers';
+import Grid from '@material-ui/core/Grid';
 
-import { FIRE_DATA_PATHS } from 'constants/index';
 
 const StyledContainer = styled(Container)`
   text-align: center;
-  height: calc(100vh - 80px);
+  // height: calc(100% - 80px);
   overflow: auto;
   padding-bottom: 2rem;
 `;
@@ -35,14 +32,9 @@ const SelectMonthSection = styled.div`
   padding-top: 1rem;
 `;
 
-const BuildingSection = styled.div`
-  width: 100%;
-  display: flex;
-  margin-top: 2rem;
-  
-  img {
-    height: 19rem;
-    border-radius: 1rem;
+const BuildingSection = styled(Grid)`
+  &&& {
+    margin-top: 2rem;
   }
 `;
 
@@ -56,17 +48,19 @@ const GraphWrapper = styled.div`
 `
 
 const BuildingInfo = styled(Segment)`
-  flex: 1;
+  width: 100%;
   text-align: left;
-  margin-right: 2rem;
+  min-width: 350px;
 `;
 
 const TransitInfo = styled(Segment)`
-  flex: 1;
+  width: 100%;
   text-align: left;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  min-width: 300px;
+  height: 100%;
 
   span {
     font-size: 3rem;
@@ -241,7 +235,11 @@ export class Dashboard extends React.PureComponent {
     const outstandingUsers = [];
     residents.forEach(resident => {
       let status = 'Outstanding';
-      if (resident.paymentHistory && resident.paymentHistory[month]) {
+      // Actually it's correct, should be clarify 
+      // if (resident.paymentHistory && resident.paymentHistory[month]) {
+      //   status = 'Paid';
+      // }
+      if (resident.price === 0) {
         status = 'Paid';
       }
       outstandingUsers.push({
@@ -250,9 +248,6 @@ export class Dashboard extends React.PureComponent {
       });
     })
     return outstandingUsers;
-  }
-
-  handleExport = () => {
   }
 
   handleModal = showModal => () => {
@@ -276,7 +271,6 @@ export class Dashboard extends React.PureComponent {
         <Progress loading={loading} />
         <Header
           title="Dashboard"
-          onExport={this.handleExport}
         />
         <StyledContainer>
           <SelectMonthSection>
@@ -285,31 +279,35 @@ export class Dashboard extends React.PureComponent {
               onChange={this.handleChange('month')}
             />
           </SelectMonthSection>
-          <BuildingSection>
-            <BuildingInfo>
-              <SectionTitle>Payment Progress</SectionTitle>
-              <StatisticSection>
-                <GraphWrapper>
-                  <Chart options={chartOptions} series={[totalProgress]} type="radialBar" height="270" width="270" />
-                </GraphWrapper>
-                <DataSection>
-                  <div>
-                    Rentroll: <strong>${numberWithCommas(totalRentRoll)}</strong>
-                  </div>
-                  <div>
-                    Paid: <strong>${numberWithCommas(totalPaid)}</strong>
-                  </div>
-                  <div>
-                    Outstanding: <strong>${numberWithCommas(totalRentRoll - totalPaid)}</strong>
-                  </div>
-                </DataSection>
-              </StatisticSection>
-            </BuildingInfo>
-            <TransitInfo>
-              <SectionTitle>In Transit</SectionTitle>
-              <div>Funds in route to your bank account</div>
-              <span>${numberWithCommas(11111)}</span>
-            </TransitInfo>
+          <BuildingSection container spacing={16}>
+            <Grid item xs>
+              <BuildingInfo>
+                <SectionTitle>Payment Progress</SectionTitle>
+                <StatisticSection>
+                  <GraphWrapper>
+                    <Chart options={chartOptions} series={[totalProgress]} type="radialBar" height="270" width="270" />
+                  </GraphWrapper>
+                  <DataSection>
+                    <div>
+                      Rentroll: <strong>${numberWithCommas(totalRentRoll)}</strong>
+                    </div>
+                    <div>
+                      Paid: <strong>${numberWithCommas(totalPaid)}</strong>
+                    </div>
+                    <div>
+                      Outstanding: <strong>${numberWithCommas(totalRentRoll - totalPaid)}</strong>
+                    </div>
+                  </DataSection>
+                </StatisticSection>
+              </BuildingInfo>
+            </Grid>
+            <Grid item xs>
+              <TransitInfo>
+                <SectionTitle>In Transit</SectionTitle>
+                <div>Funds in route to your bank account</div>
+                <span>${numberWithCommas(11111)}</span>
+              </TransitInfo>
+            </Grid>
           </BuildingSection>
           <PaymentProcessSection
             title="Payment Progress"

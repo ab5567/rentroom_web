@@ -1,3 +1,5 @@
+import { css } from 'styled-components';
+
 export const headerHeight = 0;
 
 export const appColor = '#4b74ff';
@@ -26,4 +28,23 @@ export default {
       xl: [14, 32],
     },
   },
+};
+
+export const media = {
+  handheld: (...args) => css`
+    @media(max-width: 575.98px) {
+      ${css(...args)}
+    }
+  `,
+  tablet: (...args) => css`
+    @media(max-width: 991.98px)
+      and (min-width: 576px) {
+        ${css(...args)}
+      }
+  `,
+  mobile: (...args) => css`
+  @media(max-width: 767.98px) {
+      ${css(...args)}
+    }
+  `
 };

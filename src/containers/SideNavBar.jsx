@@ -8,6 +8,7 @@ import { NavLink } from 'react-router-dom';
 import { utils } from 'styled-minimal';
 import Avatar from '@material-ui/core/Avatar';
 import { logOut } from 'actions/index';
+import { media } from 'modules/theme';
 
 
 const Nav = styled.nav`
@@ -25,6 +26,7 @@ const Nav = styled.nav`
   top: 0;
   left: 0;
   bottom: 0;
+  transform: translateX(0);
 
   button {
     margin-top: auto;
@@ -32,6 +34,12 @@ const Nav = styled.nav`
     color: white;
     font-size: 14px;
   }
+
+  ${media.mobile`
+    left: 100%;
+    transform: translateX(${props => props.mobileOpened ? '-100' : '0'}%);
+  `};
+
 `;
 
 const UserSection = styled.div`
@@ -118,9 +126,9 @@ class SideNavBar extends React.PureComponent {
 
 
   render() {
-    const { user } = this.props;
+    const { user, mobileOpened } = this.props;
     return (
-      <Nav>
+      <Nav mobileOpened={mobileOpened}>
         <UserSection>
           <span>RENT ROOM</span>
           {/* <div></div> */}

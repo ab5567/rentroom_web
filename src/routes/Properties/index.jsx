@@ -17,7 +17,7 @@ import EditPropertyModal from './EditPropertyModal';
 
 const StyledContainer = styled(Container)`
   text-align: center;
-  height: calc(100vh - 160px);
+  // height: calc(100% - 160px);
   overflow: auto;
 `;
 

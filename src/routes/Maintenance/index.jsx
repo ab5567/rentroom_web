@@ -17,7 +17,7 @@ import history from 'modules/history';
 
 const StyledContainer = styled(Container)`
   text-align: center;
-  height: calc(100vh - 160px);
+  // height: calc(100% - 160px);
   overflow: auto;
   background: #fbfbfb;
 `;
@@ -25,13 +25,13 @@ const StyledContainer = styled(Container)`
 const ColDefs = [
   { id: 'photo', numeric: false, disablePadding: false, label: 'Photo', sortable: false },
   { id: 'tenant', numeric: false, disablePadding: false, label: 'Tenant', sortable: true },
-  { id: 'tenant_email', numeric: false, disablePadding: false, label: 'Tenant Email', sortable: true },
   { id: 'subject', numeric: false, disablePadding: false, label: 'Subject', sortable: true },
-  { id: 'message', numeric: false, disablePadding: false, label: 'Message', sortable: true },
+  { id: 'status', numeric: false, disablePadding: false, label: 'Status', sortable: true },
 ];
 
 const SortColDefs = [
   { id: 'subject', label: 'Subject', array: [] },
+  { id: 'status', label: 'Status', array: [] },
 ]
 
 const SearchColDefs = ['tenant',  'tenant_email', 'message'];
@@ -84,6 +84,7 @@ export class Maintenance extends React.PureComponent {
         item.subject = object.subject;
         item.photo = object.photo; 
         item.message = object.message; 
+        item.status = object.status ? object.status : 'Open'
         if (item.tenant) {
           allData.push(item);
         }

@@ -16,6 +16,7 @@ const StyledTable = styled(Table)`
   &&& {
     td, th {
       font-size: 1rem;
+      padding: 0 0.5rem;
     }
   }
 `;
@@ -96,9 +97,9 @@ class ExtendedTable extends React.Component {
   }
 
   handlClickRow = itemId => () => {
-    if (this.props.onClickRow) {
-      this.props.onClickRow(itemId)
-    }
+    // if (this.props.onClickRow) {
+    //   this.props.onClickRow(itemId)
+    // }
   }
 
   isSelected = id => this.props.selected.indexOf(id) !== -1;
@@ -136,7 +137,7 @@ class ExtendedTable extends React.Component {
                   tabIndex={-1}
                   key={item.id}
                   selected={isSelected}
-                  onClick={this.handlClickRow(item.id)}
+                  onClick={this.handleEditItem(item.id)}
                 >
                   {hasEditing &&
                     <TableCell padding="checkbox">
@@ -151,7 +152,7 @@ class ExtendedTable extends React.Component {
                     > 
                       {col.id === 'photo' 
                         ? <Photo src={item.photo ? item.photo : PlaceholderPropertyImage}/>
-                        : col.id === 'price' ? `$${numberWithCommas(item[col.id])}` : item[col.id]} 
+                        : (col.id === 'price' || col.id === 'rentRoll' || col.id === 'paid' ) ? `$${numberWithCommas(item[col.id])}` : item[col.id]} 
                     </TableCell>
                   )}
                   {hasEditing &&

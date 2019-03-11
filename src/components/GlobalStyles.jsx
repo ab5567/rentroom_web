@@ -18,6 +18,14 @@ const GlobalStyle = createGlobalStyle`
     font-size: 87.5%;
     -webkit-font-smoothing: antialiased;
     height: 100%;
+
+    @media(max-width: 575.98px) {
+      font-size: 75%;
+    }
+
+    @media(max-width: 991.98px) and (min-width: 576px) {
+      font-size: 80%;
+    }
   }
 
   body {

@@ -12,14 +12,22 @@ import InputAdornment from '@material-ui/core/InputAdornment';
 import SearchRounded from '@material-ui/icons/SearchRounded';
 
 const Wrapper = styled.div`
-  height: 80px;
+  min-height: 80px;
 `;
 
 const Container = styled(StyledContainer)`
   display: flex;
   align-items: center;
   height: 100%;
+  min-height: 80px;
+  flex-wrap: wrap;
 `; 
+
+const SearchWrapper = styled(FormControl)`
+  &&& {
+    margin: 0.5rem 0 0.5rem 1rem;
+  }
+`;
 
 const StyledInput = styled(OutlinedInput)`
   &&& {
@@ -30,12 +38,9 @@ const StyledInput = styled(OutlinedInput)`
   }
 `;
 
-
-
 const FloatRightWrapper = styled.div`
   margin-left: auto;
 `;
-
 
 class SearchSection extends React.PureComponent {
   static propTypes = {
@@ -83,7 +88,7 @@ class SearchSection extends React.PureComponent {
               />
             )
           }
-          <FormControl>
+          <SearchWrapper>
             <StyledInput
               id="input-with-icon-adornment"
               labelWidth={0}
@@ -96,7 +101,7 @@ class SearchSection extends React.PureComponent {
                 </InputAdornment>
               }
             />
-          </FormControl>
+          </SearchWrapper>
           <FloatRightWrapper>
             <TablePagination
               rowsPerPageOptions={[5, 10, 25]}

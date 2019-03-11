@@ -11,9 +11,11 @@ import SaveIcon from '@material-ui/icons/Save';
 import EditIcon from '@material-ui/icons/Edit';
 import rgba from 'polished/lib/color/rgba';
 import Button from 'components/Button';
+import Grid from '@material-ui/core/Grid';
+
 
 const Wrapper = styled.div`
-  height: 80px;
+  min-height: 80px;
   border-bottom: 1px solid ${props => rgba(props.theme.palette.second, 0.1)};
   background: white;
 `;
@@ -21,19 +23,24 @@ const Wrapper = styled.div`
 const Container = styled(StyledContainer)`
   display: flex;
   align-items: center;
-  height: 100%;
+  min-height: 80px;
 `; 
 
 const Title = styled.div`
   font-size: 2rem;
   font-weight: 900;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  min-height: 45px;
 `;
 
 const ButtonsWrapper = styled.div`
   margin-left: auto;
+  text-align: right;
 
   button {
-    margin-left: 10px;
+    margin: 5px 0 5px 10px;
   }
 `;
 
@@ -69,43 +76,49 @@ class Header extends React.PureComponent {
     return (
       <Wrapper>
         <Container>
-          <Title>{title}</Title>
-          <ButtonsWrapper>
-            {onEdit && 
-              <Button variant="contained" color="default" onClick={onEdit}>
-                {editButtonTitle || 'Edit'}
-                <EditIcon />
-              </Button>
-            }
-            {onAddNewEntry && 
-              <Button variant="contained" color="default" onClick={onAddNewEntry}>
-                {addButtonTitle || 'Add New Entry'}
-                <AddIcon />
-              </Button>
-            }
-            {onBulkDelete &&
-              <Button variant="contained" color="secondary" onClick={onBulkDelete} disabled={bulkDeleteDisabled}>
-                Delete
-                <DeleteIcon />
-              </Button>
-            }
-            {/* <Button variant="contained" color="secondary" onClick={onPrint}>
-              Print
-              <PrintIcon />
-            </Button> */}
-            {onExport &&
-              <Button variant="contained" color="default" onClick={onExport}>
-                Export
-                <DownloadIcon className={classNames('fa fa-download')} />
-              </Button>
-            }
-            {onSave &&
-              <Button variant="contained" color="default" onClick={onSave}>
-                Save
-                <SaveIcon />
-              </Button>
-            }
-          </ButtonsWrapper>
+          <Grid container justify="space-between">
+            <Grid item >
+              <Title>{title}</Title>
+            </Grid>
+            <Grid item sm>
+              <ButtonsWrapper>
+                {onEdit && 
+                  <Button variant="contained" color="default" onClick={onEdit}>
+                    {editButtonTitle || 'Edit'}
+                    <EditIcon />
+                  </Button>
+                }
+                {onAddNewEntry && 
+                  <Button variant="contained" color="default" onClick={onAddNewEntry}>
+                    {addButtonTitle || 'Add New Entry'}
+                    <AddIcon />
+                  </Button>
+                }
+                {onBulkDelete &&
+                  <Button variant="contained" color="secondary" onClick={onBulkDelete} disabled={bulkDeleteDisabled}>
+                    Delete
+                    <DeleteIcon />
+                  </Button>
+                }
+                {/* <Button variant="contained" color="secondary" onClick={onPrint}>
+                  Print
+                  <PrintIcon />
+                </Button> */}
+                {onExport &&
+                  <Button variant="contained" color="default" onClick={onExport}>
+                    Export
+                    <DownloadIcon className={classNames('fa fa-download')} />
+                  </Button>
+                }
+                {onSave &&
+                  <Button variant="contained" color="default" onClick={onSave}>
+                    Save
+                    <SaveIcon />
+                  </Button>
+                }
+              </ButtonsWrapper>
+            </Grid>
+          </Grid>
         </Container>
       </Wrapper>
     );

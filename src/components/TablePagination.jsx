@@ -4,6 +4,9 @@ import TablePagination from '@material-ui/core/TablePagination';
 
 const StyledTablePagination = styled(TablePagination)`
   &&& {
+    & > div:first-of-type {
+      flex-wrap: wrap;
+    } 
     div {
       font-size: 1rem;
     }

@@ -17,24 +17,22 @@ import { FIRE_DATA_PATHS } from 'constants/index';
 
 const StyledContainer = styled(Container)`
   text-align: center;
-  height: calc(100vh - 160px);
+  // height: calc(100% - 160px);
   overflow: auto;
 `;
 
 const ColDefs = [
   { id: 'name', numeric: false, disablePadding: false, label: 'Name', sortable: true },
-  { id: 'email', numeric: false, disablePadding: false, label: 'Email', sortable: false },
   { id: 'address', numeric: false, disablePadding: false, label: 'Address', sortable: true },
-  { id: 'state', numeric: false, disablePadding: false, label: 'State', sortable: true },
+  { id: 'price', numeric: false, disablePadding: false, label: 'Balance', sortable: true },
   { id: 'lease end', numeric: false, disablePadding: false, label: 'Lease End', sortable: true },
 ];
 
 const SortColDefs = [
-  { id: 'state', label: 'Location', array: [] },
   { id: 'lease end', label: 'Lease End', array: [] },
 ];
 
-const SearchColDefs = ['name', 'email'];
+const SearchColDefs = ['name'];
 
 
 export class Residents extends React.PureComponent {

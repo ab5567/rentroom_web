@@ -10,7 +10,7 @@ const StyledSelect = styled(Select)`
   &&& {
     // font-size: 1.4rem;
     min-width: 8rem;
-    margin-right: 1.5rem;
+    margin: 0.5rem 0 0.5rem 1rem;
   }
 `;
 

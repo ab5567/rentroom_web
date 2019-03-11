@@ -3,7 +3,6 @@ import styled from 'styled-components';
 import { Router, Switch, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
 
-import { Container } from 'styled-minimal';
 import SideNavBar from 'containers/SideNavBar';
 import Dashboard from 'routes/Dashboard';
 import Residents from 'routes/Residents';
@@ -15,6 +14,10 @@ import PropertyDetail from 'routes/Properties/PropertyDetail';
 import Maintenance from 'routes/Maintenance';
 import MaintenanceRequestDetails from 'routes/Maintenance/MaintenanceRequestDetails';
 import RoutePrivate from 'components/RoutePrivate';
+import { media } from 'modules/theme';
+import MenuIcon from '@material-ui/icons/Menu';
+import CloseIcon from '@material-ui/icons/Close';
+import ButtonBase from '@material-ui/core/ButtonBase';
 
 import { firebaseDatabase } from 'config/firebase';
 import { FIRE_DATA_PATHS } from 'constants/index';
@@ -24,7 +27,7 @@ import {
   fetchPropertiesSuccess,  
   fetchMaintenancesSuccess    
 } from 'actions/index';
-
+import { Button } from '@material-ui/core';
 
 
 const Screen = styled.div`
@@ -40,16 +43,76 @@ const Body = styled.div`
   right: 0;
   top: 0;
   bottom: 0;
+  overflow: hidden;
+
+  ${media.mobile`
+    left: 0;
+    transform: translateX(${props => props.mobileOpened ? '-250' : '0'}px);
+  `};
+`;
+
+const MobileHeader = styled.div`
+  width: 100%;
+  height: 70px;
+  background-color: #333333;
+  display: none;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+
+  span {
+    font-size: 1.7rem;
+    font-weight: bold;
+    color: white;
+  }
+
+  svg {
+    fill: white;
+    font-size: 35px;
+  }
+
+  ${media.mobile`
+    display: flex;
+  `};
+`;
+
+const Container = styled.div`
+  width: 100%;
+  height: 100vh;
+  overflow-y: scroll;
+
+  ${media.mobile`
+    height: calc(100vh - 70px);
+  `};
 `;
 
 export class Private extends React.PureComponent {
   static propTypes = {
   };
 
+  state = {
+    openMobileMenu: false
+  }
+  
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.getScreenWdith);
+  }
+
   componentDidMount() {
     this.startFetchAddresses();
     this.startFetchMaintenances();
     this.startFetchProperties();
+
+    this.getScreenWdith();
+    window.addEventListener("resize", this.getScreenWdith);
+  }
+
+  getScreenWdith = () => {
+    const { openMobileMenu } = this.state;
+    const screenWidth = window.innerWidth;
+    if (screenWidth > 768 && openMobileMenu) {
+      this.setState({ openMobileMenu: false });
+    } 
   }
 
   startFetchAddresses = () => {
@@ -150,74 +213,92 @@ export class Private extends React.PureComponent {
     });
   }
 
+  handleMobileMenu = () => {
+    this.setState(prevState => ({
+      openMobileMenu: !prevState.openMobileMenu
+    }));
+  }
+
   render() {
     const { match } = this.props;
+    const { openMobileMenu } = this.state;
     const baseUrl = match.url;
     return (
       <Screen key="Private" data-testid="PrivateWrapper">
-        <SideNavBar {...this.props}/>
-        <Body>
-          <Switch>
-          <RoutePrivate
-              isAuthenticated
-              path={`${baseUrl}`}
-              exact
-              component={Residents}/>
-            <RoutePrivate
-              isAuthenticated
-              path={`${baseUrl}/dashboard`}
-              exact
-              component={Dashboard}
-            />
-            <RoutePrivate
-              isAuthenticated
-              path={`${baseUrl}/properties`}
-              exact
-              component={Properties}
-            />
-            <RoutePrivate
-              isAuthenticated
-              path={`${baseUrl}/properties/:id`}
-              exact
-              component={PropertyDetail}
-            />
-            <RoutePrivate
-              isAuthenticated
-              path={`${baseUrl}/residents`}
-              exact
-              component={Residents}
-            />
-            <RoutePrivate
-              isAuthenticated
-              path={`${baseUrl}/residents/:id`}
-              exact
-              component={AddEditResident}
-            />
-            <RoutePrivate
-              isAuthenticated
-              path={`${baseUrl}/maintenance`}
-              exact
-              component={Maintenance}
-            />
-            <RoutePrivate
-              isAuthenticated
-              path={`${baseUrl}/maintenance/:id`}
-              exact
-              component={MaintenanceRequestDetails}
-            />
-            <RoutePrivate
-              isAuthenticated
-              path={`${baseUrl}/community`}
-              exact
-              component={Community}
-            />
-            <RoutePrivate
-              isAuthenticated
-              path={`${baseUrl}/community/:id`}
-              exact
-              component={AddEditCommunity}
-            />
-          </Switch>
+        <SideNavBar
+          mobileOpened={openMobileMenu} 
+          {...this.props}
+        />
+        <Body mobileOpened={openMobileMenu}>
+          <MobileHeader>
+            <span>RENT ROOM</span>
+            <ButtonBase onClick={this.handleMobileMenu}>
+              {openMobileMenu ? <CloseIcon/> : <MenuIcon/>}
+            </ButtonBase>
+          </MobileHeader>
+          <Container>
+            <Switch>
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}`}
+                exact
+                component={Residents}/>
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/dashboard`}
+                exact
+                component={Dashboard}
+              />
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/properties`}
+                exact
+                component={Properties}
+              />
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/properties/:id`}
+                exact
+                component={PropertyDetail}
+              />
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/residents`}
+                exact
+                component={Residents}
+              />
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/residents/:id`}
+                exact
+                component={AddEditResident}
+              />
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/maintenance`}
+                exact
+                component={Maintenance}
+              />
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/maintenance/:id`}
+                exact
+                component={MaintenanceRequestDetails}
+              />
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/community`}
+                exact
+                component={Community}
+              />
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/community/:id`}
+                exact
+                component={AddEditCommunity}
+              />
+            </Switch>
+          </Container>
         </Body>
       </Screen>
     );

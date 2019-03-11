@@ -20,7 +20,7 @@ const RightArrow = require('assets/media/images/right-arrow.png');
 
 const StyledContainer = styled(Container)`
   text-align: center;
-  height: calc(100vh - 100px);
+  // height: calc(100vh - 100px);
   overflow: auto;
   display: flex;
   flex-direction: column;
@@ -56,7 +56,6 @@ const InfoItem = styled.div`
 
 const MessagesSection = styled.div`
   flex: 1;
-  overflow-y: scroll;
 `;
 
 const MessageContainer = styled.div`
@@ -113,7 +112,8 @@ const Input = styled.div`
   box-shadow: 0px 2px 5px 0px rgba(0,0,0,0.5);
   padding: 0.7rem 1rem;
   margin-right: 1rem;
-  width: 50%;
+  width: 80%;
+  max-width: 650px;
 
   input {
     flex: 1;
