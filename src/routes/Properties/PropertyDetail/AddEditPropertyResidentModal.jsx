@@ -3,6 +3,7 @@ import React, { Fragment } from 'react';
 import styled from 'styled-components';
 import _ from 'lodash';
 import update from 'immutability-helper';
+import { connect } from 'react-redux';
 
 import { firebaseDatabase } from 'config/firebase';
 import TextField from '@material-ui/core/TextField';
@@ -15,7 +16,7 @@ import CityInput from 'components/CityInput';
 import ErrorLabel from 'components/ErrorLabel';
 
 
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { FIRE_DATA_PATHS, getFirebasePaths } from 'constants/index';
 
 
 const TextFieldWrapper = styled.div`
@@ -94,17 +95,17 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
     if (!this.validation()) {
       return;
     }
-    let { data, propertyId } = this.props;
+    let { data, propertyId, user } = this.props;
     let id = data.id;
     if (!id) {
-      id = firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/residents`).push().key;
+      id = firebaseDatabase.ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/residents`).push().key;
       console.log('New Key', id);
     } 
     console.log('Saving DAta', this.state.data);
     console.log('Saving props', this.props);
 
     if (data.uid) {
-      const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.RESIDENTS}/${data.uid}`);
+      const ref = firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${data.uid}`);
       ref.update(this.state.data).then((error) => {
         this.handleClose();
         if (error) {
@@ -115,7 +116,7 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
       return
     }
 
-    const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/residents/${id}`);
+    const ref = firebaseDatabase.ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/residents/${id}`);
     ref.update(this.state.data).then((error) => {
       this.handleClose();
       if (error) {
@@ -215,5 +216,8 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
   }
 }
 
-export default AddEditPropertyResidentModal;
+function mapStateToProps(state) {
+  return { user: state.user };
+}
 
+export default connect(mapStateToProps)(AddEditPropertyResidentModal);

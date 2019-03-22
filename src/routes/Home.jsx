@@ -77,7 +77,7 @@ const ErrorMessage = styled.div`
 
 const Header = styled.div`
   padding: 15px;
-  background: linear-gradient(60deg, #ec407a, #d81b60);
+  background: #4b74ff;
   box-shadow: 0 4px 20px 0px rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(233, 30, 99, 0.4);
   border-radius: 3px;
   color: white;

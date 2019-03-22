@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React, { Fragment } from 'react';
+import { connect } from 'react-redux';
 import styled from 'styled-components';
 import _ from 'lodash';
 import update from 'immutability-helper';
@@ -8,7 +9,7 @@ import { firebaseDatabase } from 'config/firebase';
 import TextField from '@material-ui/core/TextField';
 import Modal, { ModalTitle, ModalContent, ModalActions } from 'components/Modal';
 import Progress from 'components/Progress';
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { getFirebasePaths } from 'constants/index';
 import CityInput from 'components/CityInput';
 import ErrorLabel from 'components/ErrorLabel';
 
@@ -108,12 +109,14 @@ export class AddEditCommunityModal extends React.PureComponent {
     if (!this.validation()) {
       return;
     }
+    const { user } = this.props;
+    const firebasePath = getFirebasePaths(user.uid);
     let id = this.props.data.id;
     if (!id) {
-      id = firebaseDatabase.ref(FIRE_DATA_PATHS.COMMUNITY).push().key;
+      id = firebaseDatabase.ref(firebasePath.COMMUNITY).push().key;
       console.log('New Key', id);
     } 
-    const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.COMMUNITY}/${id}`);
+    const ref = firebaseDatabase.ref(`${firebasePath.COMMUNITY}/${id}`);
     ref.update(this.state.data).then((error) => {
       this.handleClose();
       if (error) {
@@ -165,5 +168,6 @@ function mapStateToProps(state) {
   return { user: state.user };
 }
 
-export default AddEditCommunityModal;
+export default connect(mapStateToProps)(AddEditCommunityModal);
+
 

@@ -11,7 +11,7 @@ import Header from 'containers/Header';
 import SearchSection from 'containers/SearchSection';
 import { firebaseDatabase } from 'config/firebase';
 import { exportCSV } from 'modules/helpers';
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { getFirebasePaths } from 'constants/index';
 import history from 'modules/history';
 
 
@@ -64,7 +64,8 @@ export class Maintenance extends React.PureComponent {
   }
 
   refreshData = () => {
-    firebaseDatabase.ref(FIRE_DATA_PATHS.MAINTENANCE_REQUESTS).once('value').then((snapshot) => {
+    const { user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).MAINTENANCE_REQUESTS).once('value').then((snapshot) => {
       this.setState({ loading: false });
       this.processRecords(snapshot.val())
     });
@@ -84,7 +85,7 @@ export class Maintenance extends React.PureComponent {
         item.subject = object.subject;
         item.photo = object.photo; 
         item.message = object.message; 
-        item.status = object.status ? object.status : 'Open'
+        item.status = object.status ? object.status : 'Opened'
         if (item.tenant) {
           allData.push(item);
         }
@@ -120,7 +121,9 @@ export class Maintenance extends React.PureComponent {
     selected.forEach(id => {
       deletingItems[id] = null;
     });
-    firebaseDatabase.ref(FIRE_DATA_PATHS.MAINTENANCE_REQUESTS).update(deletingItems).then((error) => {
+
+    const { user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).MAINTENANCE_REQUESTS).update(deletingItems).then((error) => {
       if (error) {
         console.log('Bulk Delete Error', error);
         return;
@@ -137,9 +140,21 @@ export class Maintenance extends React.PureComponent {
   handleDeleteItem = (itemId) => {
     this.setState({ loading: true });
 
-    firebaseDatabase.ref(FIRE_DATA_PATHS.MAINTENANCE_REQUESTS).update({ [itemId]: null }).then((error) => {
+    const { user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).MAINTENANCE_REQUESTS).update({ [itemId]: null }).then((error) => {
       if (error) {
         console.log('Delete Error', error);
+        return;
+      }
+      this.refreshData();
+    });;
+  }
+  
+  handleCloseRequest = (itemId) => {
+    const { user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).MAINTENANCE_REQUESTS + `/${itemId}`).update({ status: 'Closed' }).then((error) => {
+      if (error) {
+        console.log('Close Maintenance Request Error', error);
         return;
       }
       this.refreshData();
@@ -203,6 +218,7 @@ export class Maintenance extends React.PureComponent {
             onEditItem={this.handleEditItem}
             onDeleteItem={this.handleDeleteItem}
             onClickRow={this.handleEditItem}
+            onCloseRequestItem={this.handleCloseRequest}
           />
         </StyledContainer>
       </Fragment>

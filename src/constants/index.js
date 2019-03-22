@@ -1,5 +1,5 @@
 import keyMirror from 'fbjs/lib/keyMirror';
-
+import { getPropertyGroup } from 'modules/helpers'
 /**
  * @namespace Constants
  * @desc App constants
@@ -10,7 +10,9 @@ import keyMirror from 'fbjs/lib/keyMirror';
  * @memberof Constants
  */
 
-const BaseURL = 'property_groups/amicus_properties';
+// const BaseURL = 'property_groups/asmicu_properties';
+const BaseURL = 'property_groups/ab_properties';
+
 
 export const ActionTypes = keyMirror({
   SWITCH_MENU: undefined,
@@ -51,6 +53,27 @@ export const FIRE_DATA_PATHS = {
   MAINTENANCE_REQUESTS: `${BaseURL}/maintenance_requests`,
   PROPERTIES: `${BaseURL}/locations`,
 }
+
+export function getFirebasePaths(userId) {
+  const groupId = getPropertyGroup(userId);
+  console.log('Getting firebase paths', userId)
+
+  if (!groupId) {
+    return {};
+  }
+  const baseUrl = `property_groups/${groupId}`;
+  return {
+    COMMUNITY: `${baseUrl}/posts`,
+    RESIDENTS: `${baseUrl}/users`,
+    RESIDENT_ADDRESSES: `${baseUrl}/profile`,
+    MAINTENANCE_REQUESTS: `${baseUrl}/maintenance_requests`,
+    PROPERTIES: `${baseUrl}/locations`,
+  }
+}
+
+export const FIRBASE_ADMINS_PATH = 'admins'
+
+
 
 export const STATES = [
   'AK', 

@@ -301,13 +301,13 @@ export class Dashboard extends React.PureComponent {
                 </StatisticSection>
               </BuildingInfo>
             </Grid>
-            <Grid item xs>
+            {/* <Grid item xs>
               <TransitInfo>
                 <SectionTitle>In Transit</SectionTitle>
                 <div>Funds in route to your bank account</div>
                 <span>${numberWithCommas(11111)}</span>
               </TransitInfo>
-            </Grid>
+            </Grid> */}
           </BuildingSection>
           <PaymentProcessSection
             title="Payment Progress"

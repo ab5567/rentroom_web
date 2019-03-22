@@ -3,12 +3,13 @@ import React, { Fragment } from 'react';
 import styled from 'styled-components';
 import _ from 'lodash';
 import update from 'immutability-helper';
+import { connect } from 'react-redux';
 
 import { firebaseDatabase, firebaseStorage } from 'config/firebase';
 import TextField from '@material-ui/core/TextField';
 import Modal, { ModalTitle, ModalContent, ModalActions } from 'components/Modal';
 import Progress from 'components/Progress';
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { getFirebasePaths } from 'constants/index';
 import Button from 'components/Button';
 import StateInput from 'components/StateInput';
 import CityInput from 'components/CityInput';
@@ -156,9 +157,9 @@ export class EditPropertyModal extends React.PureComponent {
     if (!this.validation()) {
       return;
     }
-    const { propertyId, onSave } = this.props; 
+    const { propertyId, onSave, user } = this.props; 
     if (propertyId) {
-      const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/building `);
+      const ref = firebaseDatabase.ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/building `);
       ref.update(this.state.data).then((error) => {
         this.handleClose();
         if (error) {
@@ -181,7 +182,7 @@ export class EditPropertyModal extends React.PureComponent {
           residents: []
         }
       }
-      const ref = firebaseDatabase.ref(FIRE_DATA_PATHS.PROPERTIES);
+      const ref = firebaseDatabase.ref(getFirebasePaths(user.uid).PROPERTIES);
       ref.update(newProperty).then((error) => {
         this.handleClose();
         if (error) {
@@ -279,5 +280,9 @@ export class EditPropertyModal extends React.PureComponent {
   }
 }
 
-export default EditPropertyModal;
+/* istanbul ignore next */
+function mapStateToProps(state) {
+  return { user: state.user };
+}
 
+export default connect(mapStateToProps)(EditPropertyModal);

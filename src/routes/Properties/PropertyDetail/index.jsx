@@ -17,13 +17,15 @@ import Progress from 'components/Progress';
 import Segment from 'components/Segment';
 import SectionTitle from 'components/SectionTitle';
 import Avatar from '@material-ui/core/Avatar';
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { getFirebasePaths } from 'constants/index';
 import SendIcon from '@material-ui/icons/Send';
 import AddEditPropertyResidentModal from './AddEditPropertyResidentModal';
 import EditPropertyModal from '../EditPropertyModal';
 import { numberWithCommas } from 'modules/helpers';
 import MonthSelect from 'components/MonthSelect';
 import Grid from '@material-ui/core/Grid';
+import { showAlert} from 'actions/index';
+
 
 
 const RightArrow = require('assets/media/images/right-arrow.png');
@@ -196,7 +198,8 @@ export class PropertyDetail extends React.PureComponent {
     selected.forEach(id => {
       deletingItems[id] = null;
     });
-    firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/residents`).update(deletingItems).then((error) => {
+    const { user } = this.props;
+    firebaseDatabase.ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/residents`).update(deletingItems).then((error) => {
       if (error) {
         console.log('Bulk Delete Error', error);
         return;
@@ -227,12 +230,47 @@ export class PropertyDetail extends React.PureComponent {
 
   handleDeleteItem = (itemId) => {
     const propertyId = this.props.match.params.id;
-    firebaseDatabase.ref(`${FIRE_DATA_PATHS.PROPERTIES}/${propertyId}/residents`).update({ [itemId]: null }).then((error) => {
+
+    const { user } = this.props;
+    firebaseDatabase.ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/residents`).update({ [itemId]: null }).then((error) => {
       if (error) {
         console.log('Delete Error', error);
         return;
       }
     });;
+  }
+  
+  handleMarkAsPaid = (residentId, residents) => {
+    const { user, dispatch } = this.props;
+    const resident = residents.find(el => el.id === residentId && el.uid);
+
+    if (!resident) {
+      dispatch(showAlert('This register is not verified.', { variant: 'danger', icon: 'bell' }));
+      return
+    }
+
+    if (resident.paymentHistory) {
+      firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${resident.uid}/paymentHistory`).update({ 
+          [this.state.month]: resident.monthlyRent,
+        }).then((error) => {
+          if (error) {
+            console.log('Mark As Paid Error', error);
+            return;
+          } 
+      });
+    } else {
+      const updatedData = { 
+        paymentHistory: {
+          [this.state.month]: resident.monthlyRent
+        } 
+      }
+      firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${resident.uid}`).update(updatedData).then((error) => {
+        if (error) {
+          console.log('Mark As Paid Error', error);
+          return;
+        }
+      });
+    }
   }
 
   handleEditProperty = () => {
@@ -330,9 +368,6 @@ export class PropertyDetail extends React.PureComponent {
       month
     } = this.state;
 
-    console.log('State', this.state);
-    console.log('Props', this.props);
-
     const { id } = this.props.match.params;
     const { residents, rentRoll, paid, progress } = this.sortAndFilterArray();
     
@@ -406,6 +441,7 @@ export class PropertyDetail extends React.PureComponent {
               onChange={this.handleStateChange}
               onEditItem={this.handleEditItem}
               onDeleteItem={this.handleDeleteItem}
+              onMarkItemAsPaid={id => this.handleMarkAsPaid(id, residents)}
             />
           </ResidentsSection>
         </StyledContainer>
@@ -434,7 +470,8 @@ function mapStateToProps(state, props) {
     isPropertyLoaded: state.data.isPropertiesLoaded,
     property,
     isResidentsLoaded: state.data.isResidentsLoaded,
-    residents: state.data.residents 
+    residents: state.data.residents,
+    user: state.user 
   };
 }
 

@@ -20,14 +20,16 @@ import CloseIcon from '@material-ui/icons/Close';
 import ButtonBase from '@material-ui/core/ButtonBase';
 
 import { firebaseDatabase } from 'config/firebase';
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { getFirebasePaths } from 'constants/index';
 import {   
   fetchResidentsSuccess,  
   fetchAddressesSuccess,  
   fetchPropertiesSuccess,  
   fetchMaintenancesSuccess    
 } from 'actions/index';
-import { Button } from '@material-ui/core';
+
+import { setPropertyGroup, getPropertyGroup } from 'modules/helpers'
+
 
 
 const Screen = styled.div`
@@ -99,10 +101,7 @@ export class Private extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.startFetchAddresses();
-    this.startFetchMaintenances();
-    this.startFetchProperties();
-
+    this.startFetchingFirebaseData();
     this.getScreenWdith();
     window.addEventListener("resize", this.getScreenWdith);
   }
@@ -115,9 +114,33 @@ export class Private extends React.PureComponent {
     } 
   }
 
+  startFetchingFirebaseData = () => {
+    const userId = this.props.user.uid;
+    const propertyGroup = getPropertyGroup(userId)
+    if (propertyGroup) {
+      this.startFetchAddresses();
+      this.startFetchMaintenances();
+      this.startFetchProperties();
+    } else {
+      firebaseDatabase.ref('admins').once('value', (snapshot) => {
+        const admins = snapshot.val();
+        console.log('Admins...', admins);
+        const groupId = admins[userId].property_groups;
+        if (groupId) {
+          setPropertyGroup(userId, groupId);
+          this.startFetchAddresses();
+          this.startFetchMaintenances();
+          this.startFetchProperties();
+        } else {
+          console.error('This user has no property group.')
+        }
+      });
+    }
+  }
+
   startFetchAddresses = () => {
-    const { dispatch } = this.props;
-    firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENT_ADDRESSES).on('value', (snapshot) => {
+    const { dispatch, user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENT_ADDRESSES).on('value', (snapshot) => {
       const addresses = snapshot.val();
       console.log('Updating Addresses Store...', addresses);
       dispatch(fetchAddressesSuccess(addresses));
@@ -126,9 +149,9 @@ export class Private extends React.PureComponent {
   }
 
   startFetchResidents = () => {
-    const { dispatch, data } = this.props;
+    const { dispatch, data, user } = this.props;
     const addresses = data.addresses;
-    firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).on('value', (snapshot) => {
+    firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENTS).on('value', (snapshot) => {
       const residents = snapshot.val();
       console.log('Updating Resident Store...', residents);
       const allData = [];
@@ -146,8 +169,8 @@ export class Private extends React.PureComponent {
   }
 
   startFetchMaintenances = () => {
-    const { dispatch } = this.props;
-    firebaseDatabase.ref(FIRE_DATA_PATHS.MAINTENANCE_REQUESTS).on('value', (snapshot) => {
+    const { dispatch, user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).MAINTENANCE_REQUESTS).on('value', (snapshot) => {
       const records = snapshot.val();
       console.log('Updating Maintenance Store...', records);
       const allData = [];
@@ -181,8 +204,8 @@ export class Private extends React.PureComponent {
   }
 
   startFetchProperties = () => {
-    const { dispatch } = this.props;
-    firebaseDatabase.ref(FIRE_DATA_PATHS.PROPERTIES).on('value', (snapshot) => {
+    const { dispatch, user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).PROPERTIES).on('value', (snapshot) => {
       const records = snapshot.val();
       console.log('Updating Properties Store...', records);
       const allData = [];

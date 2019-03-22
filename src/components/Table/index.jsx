@@ -41,6 +41,8 @@ class ExtendedTable extends React.Component {
     onChange: PropTypes.func,
     onEditItem: PropTypes.func,
     onDeleteItem: PropTypes.func,
+    onCloseRequestItem: PropTypes.func,
+    onMarkItemAsPaid: PropTypes.func,
     onClickRow: PropTypes.func,
   }
 
@@ -96,6 +98,18 @@ class ExtendedTable extends React.Component {
     }
   }
 
+  handleCloseMaintenanceRequest = itemId => () => {
+    if (this.props.onCloseRequestItem) {
+      this.props.onCloseRequestItem(itemId)
+    }
+  }
+
+  handleMarkAsPaid = itemId => () => {
+    if (this.props.onMarkItemAsPaid) {
+      this.props.onMarkItemAsPaid(itemId)
+    }
+  }
+
   handlClickRow = itemId => () => {
     // if (this.props.onClickRow) {
     //   this.props.onClickRow(itemId)
@@ -105,13 +119,15 @@ class ExtendedTable extends React.Component {
   isSelected = id => this.props.selected.indexOf(id) !== -1;
 
   render() {
-    const { data, order, orderBy, selected, rowsPerPage, page, colDefs, onEditItem, onDeleteItem } = this.props;
+    const { data, order, orderBy, selected, rowsPerPage, page, colDefs, onEditItem, onDeleteItem, onCloseRequestItem, onMarkItemAsPaid } = this.props;
 
     if (data.length === 0) {
       return <div></div>
     }
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
     const hasEditing = (onEditItem || onDeleteItem);
+
+    console.log('Props', this.props)
 
     return (
       <StyledTable aria-labelledby="tableTitle">
@@ -130,6 +146,18 @@ class ExtendedTable extends React.Component {
             .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
             .map(item => {
               const isSelected = this.isSelected(item.id);
+              const menuProps = {
+                onEdit: this.handleEditItem(item.id),
+                onDelete: this.handleDeleteItem(item.id)
+              }
+              if (onCloseRequestItem) {
+                menuProps.onCloseRequest = this.handleCloseMaintenanceRequest(item.id)
+              }
+              if (onMarkItemAsPaid) { // Only show it to registered user
+                menuProps.onMarkAsPaid = this.handleMarkAsPaid(item.id)
+              }
+              console.log('menuProps', menuProps)
+
               return (
                 <TableRow
                   hover
@@ -157,10 +185,7 @@ class ExtendedTable extends React.Component {
                   )}
                   {hasEditing &&
                     <TableCell>
-                      <EditMenu
-                        onEdit={this.handleEditItem(item.id)}
-                        onDelete={this.handleDeleteItem(item.id)}
-                      />
+                      <EditMenu {...menuProps}/>
                     </TableCell>
                   }
 

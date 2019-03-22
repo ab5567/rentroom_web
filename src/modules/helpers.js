@@ -90,3 +90,11 @@ export function getCurrencyValue(priceStr) { // priceStr sample: $2345
   }
   return parseFloat(priceStr.slice(1))
 }
+
+export const setPropertyGroup = (userId, groupId) => {
+  localStorage.setItem(`rentroom-${userId}`, groupId);
+}
+
+export const getPropertyGroup = (userId) => {
+  return localStorage.getItem(`rentroom-${userId}`);
+}

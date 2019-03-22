@@ -11,7 +11,7 @@ import Header from 'containers/Header';
 import SearchSection from 'containers/SearchSection';
 import { firebaseDatabase } from 'config/firebase';
 import { exportCSV } from 'modules/helpers';
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { getFirebasePaths } from 'constants/index';
 import history from 'modules/history';
 import EditPropertyModal from './EditPropertyModal';
 
@@ -76,7 +76,8 @@ export class Properties extends React.PureComponent {
     selected.forEach(id => {
       deletingItems[id] = null;
     });
-    firebaseDatabase.ref(FIRE_DATA_PATHS.PROPERTIES).update(deletingItems).then((error) => {
+    const { user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).PROPERTIES).update(deletingItems).then((error) => {
       if (error) {
         console.log('Bulk Delete Error', error);
         return;
@@ -91,7 +92,8 @@ export class Properties extends React.PureComponent {
 
   handleDeleteItem = (itemId) => {
     console.log('Deleting Item', itemId);
-    firebaseDatabase.ref(FIRE_DATA_PATHS.PROPERTIES).update({ [itemId]: null }).then((error) => {
+    const { user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).PROPERTIES).update({ [itemId]: null }).then((error) => {
       if (error) {
         console.log('Delete Error', error);
         return;
@@ -176,7 +178,8 @@ export class Properties extends React.PureComponent {
 function mapStateToProps(state) {
   return { 
     isPropertiesLoaded: state.data.isPropertiesLoaded,
-    properties: state.data.properties   
+    properties: state.data.properties,
+    user: state.user   
   };
 }
 

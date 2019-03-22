@@ -3,12 +3,13 @@ import React, { Fragment } from 'react';
 import styled from 'styled-components';
 import _ from 'lodash';
 import update from 'immutability-helper';
+import { connect } from 'react-redux';
 
 import { firebaseDatabase } from 'config/firebase';
 import TextField from '@material-ui/core/TextField';
 import Modal, { ModalTitle, ModalContent, ModalActions } from 'components/Modal';
 import Progress from 'components/Progress';
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { getFirebasePaths } from 'constants/index';
 import CurrencyInput from 'components/CurrencyInput';
 import PhoneInput from 'components/PhoneInput';
 import StateInput from 'components/StateInput';
@@ -147,11 +148,13 @@ export class AddEditResidentModal extends React.PureComponent {
       return;
     }
     let id = this.props.data.id;
+    const { user } = this.props;
+    const firebaseUrl = getFirebasePaths(user.uid);
     if (!id) {
-      id = firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).push().key;
+      id = firebaseDatabase.ref(firebaseUrl.RESIDENTS).push().key;
       console.log('New Key', id);
     } 
-    const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.RESIDENTS}/${id}`);
+    const ref = firebaseDatabase.ref(`${firebaseUrl.RESIDENTS}/${id}`);
     ref.update(this.state.data).then((error) => {
       this.handleClose();
       if (error) {
@@ -197,5 +200,9 @@ export class AddEditResidentModal extends React.PureComponent {
   }
 }
 
-export default AddEditResidentModal;
+/* istanbul ignore next */
+function mapStateToProps(state) {
+  return { user: state.user };
+}
 
+export default connect(mapStateToProps)(AddEditResidentModal);

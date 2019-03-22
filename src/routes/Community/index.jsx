@@ -14,7 +14,7 @@ import history from 'modules/history';
 import Progress from 'components/Progress';
 import Table from 'components/Table';
 import AddEditCommunityModal from './AddEditCommunityModal';
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { getFirebasePaths } from 'constants/index';
  
 const StyledContainer = styled(Container)`
   text-align: center;
@@ -64,7 +64,8 @@ export class Community extends React.PureComponent {
   }
 
   refreshData = () => {
-    firebaseDatabase.ref(FIRE_DATA_PATHS.COMMUNITY).once('value').then((snapshot) => {
+    const { user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).COMMUNITY).once('value').then((snapshot) => {
       this.setState({ loading: false });
       this.processRecords(snapshot.val())
     });
@@ -111,7 +112,8 @@ export class Community extends React.PureComponent {
     selected.forEach(id => {
       deletingItems[id] = null;
     });
-    firebaseDatabase.ref(FIRE_DATA_PATHS.COMMUNITY).update(deletingItems).then((error) => {
+    const { user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).COMMUNITY).update(deletingItems).then((error) => {
       if (error) {
         console.log('Bulk Delete Error', error);
         return;
@@ -131,7 +133,8 @@ export class Community extends React.PureComponent {
   handleDeleteItem = (itemId) => {
     this.setState({ loading: true });
 
-    firebaseDatabase.ref(FIRE_DATA_PATHS.COMMUNITY).update({ [itemId]: null }).then((error) => {
+    const { user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).COMMUNITY).update({ [itemId]: null }).then((error) => {
       if (error) {
         console.log('Delete Error', error);
         return;

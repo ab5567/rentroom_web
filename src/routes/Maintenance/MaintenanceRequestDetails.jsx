@@ -12,7 +12,7 @@ import TextField from '@material-ui/core/TextField';
 import Progress from 'components/Progress';
 import Avatar from '@material-ui/core/Avatar';
 
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { getFirebasePaths } from 'constants/index';
 import SendIcon from '@material-ui/icons/Send';
 
 const RightArrow = require('assets/media/images/right-arrow.png');
@@ -151,8 +151,8 @@ export class MaintenanceRequestDetails extends React.PureComponent {
     }
 
     this.setState({ loading: true });
-
-    firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENT_ADDRESSES).once('value').then((snapshot) => {
+    const { user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENT_ADDRESSES).once('value').then((snapshot) => {
       const addresses = snapshot.val();
       this.refreshData(addresses);
     });
@@ -160,7 +160,9 @@ export class MaintenanceRequestDetails extends React.PureComponent {
 
   refreshData = (addresses) => {
     const id = this.props.match.params.id;
-    const firebasePath = `${FIRE_DATA_PATHS.MAINTENANCE_REQUESTS}/${id}`;
+
+    const { user } = this.props;
+    const firebasePath = `${getFirebasePaths(user.uid).MAINTENANCE_REQUESTS}/${id}`;
     this._databaseRef = firebaseDatabase.ref(firebasePath);
     this._databaseRef.once('value').then((snapshot) => {
       this.setState({ loading: false });
@@ -209,8 +211,9 @@ export class MaintenanceRequestDetails extends React.PureComponent {
       return;
     }
     const requestID = this.props.match.params.id;
-    const newMessageID = firebaseDatabase.ref(`${FIRE_DATA_PATHS.MAINTENANCE_REQUESTS}/${requestID}/messages`).push().key;
-    const ref = firebaseDatabase.ref(`${FIRE_DATA_PATHS.MAINTENANCE_REQUESTS}/${requestID}/messages/${newMessageID}`);
+    const { user } = this.props;
+    const newMessageID = firebaseDatabase.ref(`${getFirebasePaths(user.uid).MAINTENANCE_REQUESTS}/${requestID}/messages`).push().key;
+    const ref = firebaseDatabase.ref(`${getFirebasePaths(user.uid).MAINTENANCE_REQUESTS}/${requestID}/messages/${newMessageID}`);
     const newMsg = {
       sender: this.props.user.uid,
       message: currentMessage,

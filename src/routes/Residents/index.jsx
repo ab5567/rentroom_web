@@ -13,7 +13,7 @@ import Table from 'components/Table';
 import Progress from 'components/Progress';
 import AddEditResidentModal from './AddEditResidentModal';
 
-import { FIRE_DATA_PATHS } from 'constants/index';
+import { getFirebasePaths } from 'constants/index';
 
 const StyledContainer = styled(Container)`
   text-align: center;
@@ -75,7 +75,8 @@ export class Residents extends React.PureComponent {
     selected.forEach(id => {
       deletingItems[id] = null;
     });
-    firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).update(deletingItems).then((error) => {
+    
+    firebaseDatabase.ref(getFirebasePaths(this.props.user.uid).RESIDENTS).update(deletingItems).then((error) => {
       if (error) {
         console.log('Bulk Delete Error', error);
         return;
@@ -93,7 +94,7 @@ export class Residents extends React.PureComponent {
   }
 
   handleDeleteItem = (itemId) => {
-    firebaseDatabase.ref(FIRE_DATA_PATHS.RESIDENTS).update({ [itemId]: null }).then((error) => {
+    firebaseDatabase.ref(getFirebasePaths(this.props.user.uid).RESIDENTS).update({ [itemId]: null }).then((error) => {
       if (error) {
         console.log('Delete Error', error);
         return;
@@ -178,7 +179,8 @@ export class Residents extends React.PureComponent {
 function mapStateToProps(state) {
   return { 
     isResidentsLoaded: state.data.isResidentsLoaded,
-    residents: state.data.residents   
+    residents: state.data.residents,
+    user: state.user
   };
 }
 

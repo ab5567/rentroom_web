@@ -11,6 +11,9 @@ import MenuList from '@material-ui/core/MenuList';
 import Popover from '@material-ui/core/Popover';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
+import CloseIcon from '@material-ui/icons/Close';
+import PaymentIcon from '@material-ui/icons/AttachMoney';
+
 
 const ButtonLabel = styled.span`
   margin-left: 1rem;
@@ -20,6 +23,8 @@ class EditMenu extends React.Component {
   static props = {
     onEdit: PropTypes.func,
     onDelete: PropTypes.func,
+    onCloseRequest: PropTypes.func,
+    onMarkAsPaid: PropTypes.func,
   }
 
   state = {
@@ -31,7 +36,8 @@ class EditMenu extends React.Component {
     this.setState({ anchorEl: event.currentTarget });
   };
 
-  handleClose = () => {
+  handleClose = (event) => {
+    event.stopPropagation();
     this.setState({ anchorEl: null });
   };
 
@@ -47,10 +53,23 @@ class EditMenu extends React.Component {
     this.props.onDelete();
   }
 
+  handleCloseMaintenanceRequest = (event) => {
+    event.stopPropagation();
+    this.setState({ anchorEl: null });
+    this.props.onCloseRequest();
+  }
+
+  handleMarkAsPaid = (event) => {
+    event.stopPropagation();
+    this.setState({ anchorEl: null });
+    this.props.onMarkAsPaid();
+  }
+  
+
   render() {
     const { anchorEl } = this.state;
     const open = Boolean(anchorEl);
-
+    const { onEdit, onDelete, onCloseRequest, onMarkAsPaid } = this.props;
     return (
       <div>
         <IconButton
@@ -77,14 +96,34 @@ class EditMenu extends React.Component {
           <Paper>
             <ClickAwayListener onClickAway={this.handleClose}>
               <MenuList>
-                <MenuItem onClick={this.handleEdit}>
-                  <EditIcon/> 
-                  <ButtonLabel>Edit</ButtonLabel>
-                </MenuItem>
-                <MenuItem onClick={this.handleDelete}>
-                  <DeleteIcon/> 
-                  <ButtonLabel>Delete</ButtonLabel>
-                </MenuItem>
+                {
+                  onEdit &&
+                  <MenuItem onClick={this.handleEdit}>
+                    <EditIcon/> 
+                    <ButtonLabel>Edit</ButtonLabel>
+                  </MenuItem>
+                }
+                {
+                  onDelete &&
+                  <MenuItem onClick={this.handleDelete}>
+                    <DeleteIcon/> 
+                    <ButtonLabel>Delete</ButtonLabel>
+                  </MenuItem>
+                }
+                {
+                  onCloseRequest &&
+                  <MenuItem onClick={this.handleCloseMaintenanceRequest}>
+                    <CloseIcon/> 
+                    <ButtonLabel>Close</ButtonLabel>
+                  </MenuItem>
+                }
+                {
+                  onMarkAsPaid &&
+                  <MenuItem onClick={this.handleMarkAsPaid}>
+                    <PaymentIcon/> 
+                    <ButtonLabel>Mark as Paid</ButtonLabel>
+                  </MenuItem>
+                }
               </MenuList>
             </ClickAwayListener>
           </Paper>
