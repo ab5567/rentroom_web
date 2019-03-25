@@ -249,28 +249,20 @@ export class PropertyDetail extends React.PureComponent {
       return
     }
 
-    if (resident.paymentHistory) {
-      firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${resident.uid}/paymentHistory`).update({ 
-          [this.state.month]: resident.monthlyRent,
-        }).then((error) => {
-          if (error) {
-            console.log('Mark As Paid Error', error);
-            return;
-          } 
-      });
-    } else {
-      const updatedData = { 
-        paymentHistory: {
-          [this.state.month]: resident.monthlyRent
-        } 
-      }
-      firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${resident.uid}`).update(updatedData).then((error) => {
-        if (error) {
-          console.log('Mark As Paid Error', error);
-          return;
-        }
-      });
+    console.log('mark as paid', resident)
+
+    const updatedData = { 
+      paymentHistory: {
+        [this.state.month]: `$${resident.price}`
+      },
+      price: 0 
     }
+    firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${resident.uid}`).update(updatedData).then((error) => {
+      if (error) {
+        console.log('Mark As Paid Error', error);
+        return;
+      }
+    });
   }
 
   handleEditProperty = () => {
