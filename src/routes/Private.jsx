@@ -1,8 +1,14 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import styled from 'styled-components';
 import { Router, Switch, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
-
+import axios from 'axios';
+import DialogActions from '@material-ui/core/DialogActions';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
+import DialogTitle from '@material-ui/core/DialogTitle';
+import Dialog from '@material-ui/core/Dialog';
+import Button from '@material-ui/core/Button';
 import SideNavBar from 'containers/SideNavBar';
 import Dashboard from 'routes/Dashboard';
 import Residents from 'routes/Residents';
@@ -29,6 +35,7 @@ import {
 } from 'actions/index';
 
 import { setPropertyGroup, getPropertyGroup } from 'modules/helpers'
+import { Typography } from '@material-ui/core';
 
 
 
@@ -88,12 +95,15 @@ const Container = styled.div`
   `};
 `;
 
+var websiteUrl = '';
+
 export class Private extends React.PureComponent {
   static propTypes = {
   };
 
   state = {
-    openMobileMenu: false
+    openMobileMenu: false,
+    showStripeModal: false
   }
   
   componentWillUnmount() {
@@ -101,9 +111,46 @@ export class Private extends React.PureComponent {
   }
 
   componentDidMount() {
+    this.checkStripe();
+
     this.startFetchingFirebaseData();
     this.getScreenWdith();
     window.addEventListener("resize", this.getScreenWdith);
+  }
+
+  checkStripe = () => {
+    if (window.location.href.includes('code=')) {
+      var equalIndex = window.location.href.indexOf("=");
+      var questionIndex = window.location.href.indexOf("?");
+      var lastIndex = window.location.href.lastIndexOf("/");
+      var stripeCode = window.location.href.substring(equalIndex + 1, lastIndex - 1);
+      websiteUrl = window.location.href.substring(0, questionIndex);
+      console.log('Stripe code', stripeCode);
+      console.log('websiteUrl', websiteUrl);
+
+    //https://us-central1-ryan-915d2.cloudfunctions.net/createStripeAccount
+    //https://us-central1-rentroom-dev.cloudfunctions.net/createStripeAccount
+    // this.setState({ showStripeModal: true })
+    axios.post('https://us-central1-rentroom-dev.cloudfunctions.net/createStripeAccount', {
+      stripe_auth_code: stripeCode,
+      user_id: this.props.user.uid,
+      property_group: 'amicus_properties'
+    })
+    .then((response) => {
+      console.log(response);
+      if (response.status == 200) {
+        this.setState({ showStripeModal: true })
+      }
+    })
+    .catch((error) => {
+      console.log(error);
+    });
+    }
+
+  }
+
+  handleCloseStripeModal = () => {
+    window.location.replace(websiteUrl);
   }
 
   getScreenWdith = () => {
@@ -323,6 +370,22 @@ export class Private extends React.PureComponent {
             </Switch>
           </Container>
         </Body>
+        <Dialog
+          open={this.state.showStripeModal}
+          onClose={this.handleCloseStripeModal}
+        >
+          <DialogTitle id="alert-dialog-title">Success</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="alert-dialog-description">
+              Successfully connected your Stripe account.
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={this.handleCloseStripeModal} color="primary" autoFocus>
+              Ok
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Screen>
     );
   }
