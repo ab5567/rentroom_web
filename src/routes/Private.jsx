@@ -119,13 +119,12 @@ export class Private extends React.PureComponent {
 
   checkStripe = () => {
     if (window.location.href.includes('code=')) {
-      var equalIndex = window.location.href.indexOf("=");
       var questionIndex = window.location.href.indexOf("?");
-      var lastIndex = window.location.href.lastIndexOf("/");
-      var stripeCode = window.location.href.substring(equalIndex + 1, lastIndex - 1);
+      var stripeCode = this.props.history.location.query.code
       websiteUrl = window.location.href.substring(0, questionIndex);
       console.log('Stripe code', stripeCode);
       console.log('websiteUrl', websiteUrl);
+      console.log(this.props)
 
     //https://us-central1-ryan-915d2.cloudfunctions.net/createStripeAccount
     //https://us-central1-rentroom-dev.cloudfunctions.net/createStripeAccount
