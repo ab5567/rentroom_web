@@ -111,7 +111,6 @@ export class Private extends React.PureComponent {
   }
 
   componentDidMount() {
-    this.checkStripe();
 
     this.startFetchingFirebaseData();
     this.getScreenWdith();
@@ -131,10 +130,13 @@ export class Private extends React.PureComponent {
     //https://us-central1-ryan-915d2.cloudfunctions.net/createStripeAccount
     //https://us-central1-rentroom-dev.cloudfunctions.net/createStripeAccount
     // this.setState({ showStripeModal: true })
+
+    const propertyGroup = getPropertyGroup(this.props.user.uid)
+
     axios.post('https://us-central1-rentroom-dev.cloudfunctions.net/createStripeAccount', {
       stripe_auth_code: stripeCode,
       user_id: this.props.user.uid,
-      property_group: 'amicus_properties'
+      property_group: propertyGroup
     })
     .then((response) => {
       console.log(response);
@@ -165,6 +167,7 @@ export class Private extends React.PureComponent {
     const userId = this.props.user.uid;
     const propertyGroup = getPropertyGroup(userId)
     if (propertyGroup) {
+      this.checkStripe();
       this.startFetchAddresses();
       this.startFetchMaintenances();
       this.startFetchProperties();
@@ -175,6 +178,7 @@ export class Private extends React.PureComponent {
         const groupId = admins[userId].property_groups;
         if (groupId) {
           setPropertyGroup(userId, groupId);
+          this.checkStripe();
           this.startFetchAddresses();
           this.startFetchMaintenances();
           this.startFetchProperties();
