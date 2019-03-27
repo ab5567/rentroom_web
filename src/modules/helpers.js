@@ -86,7 +86,7 @@ export function numberWithCommas(x) {
 
 export function getCurrencyValue(priceStr) { // priceStr sample: $2345
   if (priceStr === undefined || priceStr === null) {
-    return null;
+    return 0;
   }
   return parseFloat(priceStr.slice(1))
 }

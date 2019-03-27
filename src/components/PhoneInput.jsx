@@ -2,7 +2,6 @@ import React from 'react';
 import NumberFormat from 'react-number-format';
 import TextField from '@material-ui/core/TextField';
 
-
 function NumberFormatCustom(props) {
   const { inputRef, onChange, ...other } = props;
 
@@ -13,7 +12,7 @@ function NumberFormatCustom(props) {
       onValueChange={values => {
         onChange({
           target: {
-            value: values.value,
+            value: values.formattedValue,
           },
         });
       }}

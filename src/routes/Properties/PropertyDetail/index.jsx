@@ -251,13 +251,11 @@ export class PropertyDetail extends React.PureComponent {
 
     console.log('mark as paid', resident)
 
-    const updatedData = { 
-      paymentHistory: {
-        [this.state.month]: `$${resident.price}`
-      },
-      price: 0 
-    }
-    firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${resident.uid}`).update(updatedData).then((error) => {
+    var updates = {};
+    updates[`/paymentHistory/${this.state.month}`] =  `$${resident.price}`;
+    updates['/price'] = 0;
+
+    firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${resident.uid}`).update(updates).then((error) => {
       if (error) {
         console.log('Mark As Paid Error', error);
         return;
@@ -310,7 +308,8 @@ export class PropertyDetail extends React.PureComponent {
           }
         }
       }
-      rentRoll += parseFloat(validTenant.price) ? parseFloat(validTenant.price) : 0;
+      rentRoll += getCurrencyValue(validTenant.monthlyRent);
+      // rentRoll += parseFloat(validTenant.price) ? parseFloat(validTenant.price) : 0;
       if (validTenant.paymentHistory && validTenant.paymentHistory[month]) {
         const paidValue = getCurrencyValue(validTenant.paymentHistory[month]);
         paid += paidValue ? paidValue : 0;

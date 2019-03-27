@@ -192,7 +192,8 @@ export class Dashboard extends React.PureComponent {
             validTenant = registeredResident;
           }
         }
-        rentRoll += parseFloat(validTenant.price) ? parseFloat(validTenant.price) : 0;
+        rentRoll += getCurrencyValue(validTenant.monthlyRent);
+        // rentRoll += parseFloat(validTenant.price) ? parseFloat(validTenant.price) : 0;
         if (validTenant.paymentHistory && validTenant.paymentHistory[month]) {
           const paidValue = getCurrencyValue(validTenant.paymentHistory[month]);
           paid += paidValue ? paidValue : 0;
