@@ -14,6 +14,7 @@ import Dashboard from 'routes/Dashboard';
 import Residents from 'routes/Residents';
 import AddEditResident from 'routes/Residents/AddEditResident';
 import Community from 'routes/Community';
+import Reports from 'routes/Reports';
 import AddEditCommunity from 'routes/Community/AddEditCommunity';
 import Properties from 'routes/Properties';
 import PropertyDetail from 'routes/Properties/PropertyDetail';
@@ -27,17 +28,15 @@ import ButtonBase from '@material-ui/core/ButtonBase';
 
 import { firebaseDatabase } from 'config/firebase';
 import { getFirebasePaths } from 'constants/index';
-import {   
-  fetchResidentsSuccess,  
-  fetchAddressesSuccess,  
-  fetchPropertiesSuccess,  
-  fetchMaintenancesSuccess    
+import {
+  fetchResidentsSuccess,
+  fetchAddressesSuccess,
+  fetchPropertiesSuccess,
+  fetchMaintenancesSuccess,
 } from 'actions/index';
 
-import { setPropertyGroup, getPropertyGroup } from 'modules/helpers'
+import { setPropertyGroup, getPropertyGroup } from 'modules/helpers';
 import { Typography } from '@material-ui/core';
-
-
 
 const Screen = styled.div`
   height: 100vh;
@@ -56,7 +55,7 @@ const Body = styled.div`
 
   ${media.mobile`
     left: 0;
-    transform: translateX(${props => props.mobileOpened ? '-250' : '0'}px);
+    transform: translateX(${props => (props.mobileOpened ? '-250' : '0')}px);
   `};
 `;
 
@@ -95,83 +94,81 @@ const Container = styled.div`
   `};
 `;
 
-var websiteUrl = '';
+let websiteUrl = '';
 
 export class Private extends React.PureComponent {
-  static propTypes = {
-  };
+  static propTypes = {};
 
   state = {
     openMobileMenu: false,
-    showStripeModal: false
-  }
-  
+    showStripeModal: false,
+  };
+
   componentWillUnmount() {
-    window.removeEventListener("resize", this.getScreenWdith);
+    window.removeEventListener('resize', this.getScreenWdith);
   }
 
   componentDidMount() {
-
     this.startFetchingFirebaseData();
     this.getScreenWdith();
-    window.addEventListener("resize", this.getScreenWdith);
+    window.addEventListener('resize', this.getScreenWdith);
   }
 
   checkStripe = () => {
     if (window.location.href.includes('code=')) {
-      var questionIndex = window.location.href.indexOf("?");
-      var stripeCode = this.props.history.location.query.code
+      const questionIndex = window.location.href.indexOf('?');
+      const stripeCode = this.props.history.location.query.code;
       websiteUrl = window.location.href.substring(0, questionIndex);
       console.log('Stripe code', stripeCode);
       console.log('websiteUrl', websiteUrl);
-      console.log(this.props)
+      console.log(this.props);
 
-    //https://us-central1-ryan-915d2.cloudfunctions.net/createStripeAccount
-    //https://us-central1-rentroom-dev.cloudfunctions.net/createStripeAccount
-    // this.setState({ showStripeModal: true })
+      // https://us-central1-ryan-915d2.cloudfunctions.net/createStripeAccount
+      // https://us-central1-rentroom-dev.cloudfunctions.net/createStripeAccount
+      // this.setState({ showStripeModal: true })
 
-    const propertyGroup = getPropertyGroup(this.props.user.uid)
+      const propertyGroup = getPropertyGroup(this.props.user.uid);
 
-    axios.post('https://us-central1-rentroom-dev.cloudfunctions.net/createStripeAccount', {
-      stripe_auth_code: stripeCode,
-      user_id: this.props.user.uid,
-      property_group: propertyGroup
-    })
-    .then((response) => {
-      console.log(response);
-      if (response.status == 200) {
-        this.setState({ showStripeModal: true })
-      }
-    })
-    .catch((error) => {
-      console.log(error);
-    });
+      axios
+        .post('https://us-central1-rentroom-dev.cloudfunctions.net/createStripeAccount', {
+          stripe_auth_code: stripeCode,
+          user_id: this.props.user.uid,
+          property_group: propertyGroup,
+        })
+        .then(response => {
+          console.log(response);
+          if (response.status == 200) {
+            this.setState({ showStripeModal: true });
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
     }
-
-  }
+  };
 
   handleCloseStripeModal = () => {
     window.location.replace(websiteUrl);
-  }
+  };
 
   getScreenWdith = () => {
     const { openMobileMenu } = this.state;
     const screenWidth = window.innerWidth;
     if (screenWidth > 768 && openMobileMenu) {
       this.setState({ openMobileMenu: false });
-    } 
-  }
+    }
+  };
 
   startFetchingFirebaseData = () => {
     const userId = this.props.user.uid;
-    const propertyGroup = getPropertyGroup(userId)
+    const propertyGroup = getPropertyGroup(userId);
     if (propertyGroup) {
       this.checkStripe();
       this.startFetchAddresses();
       this.startFetchMaintenances();
       this.startFetchProperties();
     } else {
-      firebaseDatabase.ref('admins').once('value', (snapshot) => {
+      firebaseDatabase.ref('admins').once('value', snapshot => {
         const admins = snapshot.val();
         console.log('Admins...', admins);
         const groupId = admins[userId].property_groups;
@@ -182,30 +179,30 @@ export class Private extends React.PureComponent {
           this.startFetchMaintenances();
           this.startFetchProperties();
         } else {
-          console.error('This user has no property group.')
+          console.error('This user has no property group.');
         }
       });
     }
-  }
+  };
 
   startFetchAddresses = () => {
     const { dispatch, user } = this.props;
-    firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENT_ADDRESSES).on('value', (snapshot) => {
+    firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENT_ADDRESSES).on('value', snapshot => {
       const addresses = snapshot.val();
       console.log('Updating Addresses Store...', addresses);
       dispatch(fetchAddressesSuccess(addresses));
       this.startFetchResidents();
     });
-  }
+  };
 
   startFetchResidents = () => {
     const { dispatch, data, user } = this.props;
-    const addresses = data.addresses;
-    firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENTS).on('value', (snapshot) => {
+    const { addresses } = data;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENTS).on('value', snapshot => {
       const residents = snapshot.val();
       console.log('Updating Resident Store...', residents);
       const allData = [];
-      for (var key in residents) {
+      for (const key in residents) {
         const item = residents[key];
         item.id = key;
         item.city = item.city || item.City;
@@ -216,15 +213,15 @@ export class Private extends React.PureComponent {
       }
       dispatch(fetchResidentsSuccess(allData));
     });
-  }
+  };
 
   startFetchMaintenances = () => {
     const { dispatch, user } = this.props;
-    firebaseDatabase.ref(getFirebasePaths(user.uid).MAINTENANCE_REQUESTS).on('value', (snapshot) => {
+    firebaseDatabase.ref(getFirebasePaths(user.uid).MAINTENANCE_REQUESTS).on('value', snapshot => {
       const records = snapshot.val();
       console.log('Updating Maintenance Store...', records);
       const allData = [];
-      for (let key in records){
+      for (const key in records) {
         const item = {};
         const object = records[key];
         if (object) {
@@ -234,10 +231,11 @@ export class Private extends React.PureComponent {
           item.tenant_phone = object.tenant_phone;
           item.property = object.property;
           item.subject = object.subject;
-          item.photo = object.photo; 
-          item.message = object.message; 
+          item.photo = object.photo;
+          item.message = object.message;
+          item.status = object.status ? object.status : 'Opened';
           const messages = [];
-          for (let messageKey in object.messages){
+          for (const messageKey in object.messages) {
             const message = object.messages[messageKey];
             if (message) {
               messages.push(message);
@@ -251,15 +249,15 @@ export class Private extends React.PureComponent {
       }
       dispatch(fetchMaintenancesSuccess(allData));
     });
-  }
+  };
 
   startFetchProperties = () => {
     const { dispatch, user } = this.props;
-    firebaseDatabase.ref(getFirebasePaths(user.uid).PROPERTIES).on('value', (snapshot) => {
+    firebaseDatabase.ref(getFirebasePaths(user.uid).PROPERTIES).on('value', snapshot => {
       const records = snapshot.val();
       console.log('Updating Properties Store...', records);
       const allData = [];
-      for (let key in records){
+      for (const key in records) {
         const record = records[key];
         const item = {};
         const object = record['building '];
@@ -269,10 +267,11 @@ export class Private extends React.PureComponent {
           item.name = key;
           item.city = object.city || object.City;
           item.state = object.state || object.State;
-          item.photo = object.img || object.image; 
+          item.photo = object.img || object.image;
         }
+
         const residents = [];
-        for (let userKey in record.residents) {
+        for (const userKey in record.residents) {
           const resident = record.residents[userKey];
           if (resident) {
             resident.id = userKey;
@@ -280,17 +279,27 @@ export class Private extends React.PureComponent {
           }
         }
         item.residents = residents;
+
+        const accounts = [];
+        for (const userKey in record.accounts) {
+          const account = record.accounts[userKey];
+          if (account) {
+            account.id = userKey;
+            accounts.push(account);
+          }
+        }
+        item.accounts = accounts;
         allData.push(item);
       }
       dispatch(fetchPropertiesSuccess(allData));
     });
-  }
+  };
 
   handleMobileMenu = () => {
     this.setState(prevState => ({
-      openMobileMenu: !prevState.openMobileMenu
+      openMobileMenu: !prevState.openMobileMenu,
     }));
-  }
+  };
 
   render() {
     const { match } = this.props;
@@ -298,24 +307,17 @@ export class Private extends React.PureComponent {
     const baseUrl = match.url;
     return (
       <Screen key="Private" data-testid="PrivateWrapper">
-        <SideNavBar
-          mobileOpened={openMobileMenu} 
-          {...this.props}
-        />
+        <SideNavBar mobileOpened={openMobileMenu} {...this.props} />
         <Body mobileOpened={openMobileMenu}>
           <MobileHeader>
             <span>RENT ROOM</span>
             <ButtonBase onClick={this.handleMobileMenu}>
-              {openMobileMenu ? <CloseIcon/> : <MenuIcon/>}
+              {openMobileMenu ? <CloseIcon /> : <MenuIcon />}
             </ButtonBase>
           </MobileHeader>
           <Container>
             <Switch>
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}`}
-                exact
-                component={Residents}/>
+              <RoutePrivate isAuthenticated path={`${baseUrl}`} exact component={Residents} />
               <RoutePrivate
                 isAuthenticated
                 path={`${baseUrl}/dashboard`}
@@ -370,13 +372,11 @@ export class Private extends React.PureComponent {
                 exact
                 component={AddEditCommunity}
               />
+              <RoutePrivate isAuthenticated path={`${baseUrl}/reports`} exact component={Reports} />
             </Switch>
           </Container>
         </Body>
-        <Dialog
-          open={this.state.showStripeModal}
-          onClose={this.handleCloseStripeModal}
-        >
+        <Dialog open={this.state.showStripeModal} onClose={this.handleCloseStripeModal}>
           <DialogTitle id="alert-dialog-title">Success</DialogTitle>
           <DialogContent>
             <DialogContentText id="alert-dialog-description">
@@ -396,9 +396,9 @@ export class Private extends React.PureComponent {
 
 /* istanbul ignore next */
 function mapStateToProps(state) {
-  return { 
+  return {
     user: state.user,
-    data: state.data 
+    data: state.data,
   };
 }
 

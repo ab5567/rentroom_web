@@ -10,13 +10,19 @@ import Checkbox from '@material-ui/core/Checkbox';
 import TableHeader from 'components/Table/TableHeader';
 import EditMenu from 'components/EditMenu';
 import { numberWithCommas } from '../../modules/helpers';
+
 const PlaceholderPropertyImage = require('assets/media/images/property_default_placeholder.gif');
 
 const StyledTable = styled(Table)`
   &&& {
-    td, th {
-      font-size: 1rem;
-      padding: 0 0.5rem;
+    td,
+    th {
+      font-size: ${props => (props.csvformat === 'true' ? 0.8 : 1)}rem;
+      padding: 0 ${props => (props.csvformat === 'true' ? 0.4 : 0.5)}rem;
+      white-space: ${props => (props.csvformat === 'true' ? 'nowrap' : 'normal')};
+    }
+    tr {
+      height: ${props => (props.csvformat === 'true' ? 26 : 48)}px;
     }
   }
 `;
@@ -44,7 +50,8 @@ class ExtendedTable extends React.Component {
     onCloseRequestItem: PropTypes.func,
     onMarkItemAsPaid: PropTypes.func,
     onClickRow: PropTypes.func,
-  }
+    csvFormat: PropTypes.bool,
+  };
 
   handleSelectAllClick = event => {
     let selected;
@@ -53,8 +60,8 @@ class ExtendedTable extends React.Component {
     } else {
       selected = [];
     }
-    this.props.onChange({ selected })
-  }
+    this.props.onChange({ selected });
+  };
 
   handleRequestSort = (event, property) => {
     const orderBy = property;
@@ -63,7 +70,7 @@ class ExtendedTable extends React.Component {
       order = 'asc';
     }
     this.props.onChange({ order, orderBy });
-  }
+  };
 
   handleClick = (event, id) => {
     event.stopPropagation();
@@ -84,55 +91,74 @@ class ExtendedTable extends React.Component {
       );
     }
     this.props.onChange({ selected: newSelected });
-  }
+  };
 
   handleEditItem = itemId => () => {
     if (this.props.onEditItem) {
-      this.props.onEditItem(itemId)
+      this.props.onEditItem(itemId);
     }
-  }
+  };
 
   handleDeleteItem = itemId => () => {
     if (this.props.onDeleteItem) {
-      this.props.onDeleteItem(itemId)
+      this.props.onDeleteItem(itemId);
     }
-  }
+  };
 
   handleCloseMaintenanceRequest = itemId => () => {
     if (this.props.onCloseRequestItem) {
-      this.props.onCloseRequestItem(itemId)
+      this.props.onCloseRequestItem(itemId);
     }
-  }
+  };
 
   handleMarkAsPaid = itemId => () => {
     if (this.props.onMarkItemAsPaid) {
-      this.props.onMarkItemAsPaid(itemId)
+      this.props.onMarkItemAsPaid(itemId);
     }
-  }
+  };
 
   handlClickRow = itemId => () => {
     // if (this.props.onClickRow) {
     //   this.props.onClickRow(itemId)
     // }
-  }
+  };
 
-  isSelected = id => this.props.selected.indexOf(id) !== -1;
+  isSelected = id => {
+    if (this.props.selected) {
+      return this.props.selected.indexOf(id) !== -1;
+    }
+    return false;
+  };
 
   render() {
-    const { data, order, orderBy, selected, rowsPerPage, page, colDefs, onEditItem, onDeleteItem, onCloseRequestItem, onMarkItemAsPaid } = this.props;
+    const {
+      data,
+      order,
+      orderBy,
+      selected,
+      rowsPerPage,
+      page,
+      colDefs,
+      onEditItem,
+      onDeleteItem,
+      onCloseRequestItem,
+      onMarkItemAsPaid,
+      csvFormat,
+    } = this.props;
 
     if (data.length === 0) {
-      return <div></div>
+      return <div />;
     }
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
-    const hasEditing = (onEditItem || onDeleteItem);
+    const hasEditing = onEditItem || onDeleteItem;
+    const hasSelection = selected !== null && selected !== undefined;
 
-    console.log('Props', this.props)
+    console.log('Props', this.props);
 
     return (
-      <StyledTable aria-labelledby="tableTitle">
+      <StyledTable aria-labelledby="tableTitle" csvformat={csvFormat.toString()}>
         <TableHeader
-          numSelected={selected.length}
+          numSelected={selected ? selected.length : 0}
           order={order}
           orderBy={orderBy}
           onSelectAllClick={this.handleSelectAllClick}
@@ -140,67 +166,80 @@ class ExtendedTable extends React.Component {
           rowCount={data.length}
           colDefs={colDefs}
           hasEditing={hasEditing}
+          hasSelection={hasSelection}
         />
         <TableBody>
-          {data
-            .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-            .map(item => {
-              const isSelected = this.isSelected(item.id);
-              const menuProps = {
-                onEdit: this.handleEditItem(item.id),
-                onDelete: this.handleDeleteItem(item.id)
-              }
-              if (onCloseRequestItem) {
-                menuProps.onCloseRequest = this.handleCloseMaintenanceRequest(item.id)
-              }
-              if (onMarkItemAsPaid) { // Only show it to registered user
-                menuProps.onMarkAsPaid = this.handleMarkAsPaid(item.id)
-              }
-              console.log('menuProps', menuProps)
+          {data.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage).map(item => {
+            const isSelected = this.isSelected(item.id);
+            const menuProps = {
+              onEdit: this.handleEditItem(item.id),
+              onDelete: this.handleDeleteItem(item.id),
+            };
+            if (onCloseRequestItem) {
+              menuProps.onCloseRequest = this.handleCloseMaintenanceRequest(item.id);
+            }
+            if (onMarkItemAsPaid) {
+              // Only show it to registered user
+              menuProps.onMarkAsPaid = this.handleMarkAsPaid(item.id);
+            }
 
-              return (
-                <TableRow
-                  hover
-                  aria-checked={isSelected}
-                  tabIndex={-1}
-                  key={item.id}
-                  selected={isSelected}
-                  onClick={this.handleEditItem(item.id)}
-                >
-                  {hasEditing &&
-                    <TableCell padding="checkbox">
-                      <Checkbox checked={isSelected} color="primary" onClick={event => this.handleClick(event, item.id)}/>
-                    </TableCell>
-                  }
-                  {colDefs.map((col, index) => 
-                    <TableCell 
-                      key={`${item.id}_${index}`} 
-                      align="left"
-                      padding={col.disablePadding ? 'none' : 'dense'}
-                    > 
-                      {col.id === 'photo' 
-                        ? <Photo src={item.photo ? item.photo : PlaceholderPropertyImage}/>
-                        : (col.id === 'price' || col.id === 'rentRoll' || col.id === 'paid' ) ? `$${numberWithCommas(item[col.id])}` : item[col.id]} 
-                    </TableCell>
-                  )}
-                  {hasEditing &&
-                    <TableCell>
-                      <EditMenu {...menuProps}/>
-                    </TableCell>
-                  }
-
-                </TableRow>
-              );
-            })}
-          {emptyRows > 0 && (
+            return (
+              <TableRow
+                hover
+                aria-checked={isSelected}
+                tabIndex={-1}
+                key={item.id}
+                selected={isSelected}
+                onClick={this.handleEditItem(item.id)}
+              >
+                {hasSelection && (
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={isSelected}
+                      color="primary"
+                      onClick={event => this.handleClick(event, item.id)}
+                    />
+                  </TableCell>
+                )}
+                {colDefs.map((col, index) => (
+                  <TableCell
+                    key={`${item.id}_${index}`}
+                    align="left"
+                    padding={col.disablePadding ? 'none' : 'dense'}
+                  >
+                    {col.id === 'photo' ? (
+                      <Photo src={item.photo ? item.photo : PlaceholderPropertyImage} />
+                    ) : col.id === 'price' ||
+                      col.id === 'rentRoll' ||
+                      col.id === 'paid' ||
+                      col.id === 'amount' ? (
+                      `$${numberWithCommas(item[col.id])}`
+                    ) : (
+                      item[col.id]
+                    )}
+                  </TableCell>
+                ))}
+                {hasEditing && (
+                  <TableCell>
+                    <EditMenu {...menuProps} />
+                  </TableCell>
+                )}
+              </TableRow>
+            );
+          })}
+          {/* {emptyRows > 0 && (
             <TableRow style={{ height: 49 * emptyRows }}>
               <TableCell colSpan={6} />
             </TableRow>
-          )}
+          )} */}
         </TableBody>
       </StyledTable>
     );
   }
+
+  static defaultProps = {
+    csvFormat: false,
+  };
 }
 
-export default ExtendedTable
+export default ExtendedTable;

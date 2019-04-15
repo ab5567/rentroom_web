@@ -7,8 +7,6 @@ import TableRow from '@material-ui/core/TableRow';
 import Checkbox from '@material-ui/core/Checkbox';
 import TableSortLabel from '@material-ui/core/TableSortLabel';
 
-
-
 class TableHeader extends React.Component {
   static props = {
     colDefs: PropTypes.array.isRequired,
@@ -17,8 +15,8 @@ class TableHeader extends React.Component {
     numSelected: PropTypes.number,
     rowCount: PropTypes.number,
     onSelectAllClick: PropTypes.func,
-    hasEditing: PropTypes.bool
-  }
+    hasEditing: PropTypes.bool,
+  };
 
   createSortHandler = (property, sortable) => event => {
     if (sortable) {
@@ -27,12 +25,21 @@ class TableHeader extends React.Component {
   };
 
   render() {
-    const { onSelectAllClick, order, orderBy, numSelected, rowCount, colDefs, hasEditing } = this.props;
+    const {
+      onSelectAllClick,
+      order,
+      orderBy,
+      numSelected,
+      rowCount,
+      colDefs,
+      hasEditing,
+      hasSelection,
+    } = this.props;
 
     return (
       <TableHead>
         <TableRow>
-          {hasEditing &&
+          {hasSelection && (
             <TableCell padding="checkbox">
               <Checkbox
                 indeterminate={numSelected > 0 && numSelected < rowCount}
@@ -41,25 +48,24 @@ class TableHeader extends React.Component {
                 color="primary"
               />
             </TableCell>
-          }
-          {colDefs.map(row => (
-              <TableCell
-                key={row.id}
-                align={'left'}
-                // padding={row.disablePadding ? 'none' : 'default'}
-                sortDirection={orderBy === row.id ? order : false}
-              >
-                <TableSortLabel
-                  active={orderBy === row.id}
-                  direction={order}
-                  onClick={this.createSortHandler(row.id, row.sortable)}
-                >
-                  {row.label}
-                </TableSortLabel>
-              </TableCell>
-            )
           )}
-          {hasEditing && <TableCell/>}
+          {colDefs.map(row => (
+            <TableCell
+              key={row.id}
+              align="left"
+              // padding={row.disablePadding ? 'none' : 'default'}
+              sortDirection={orderBy === row.id ? order : false}
+            >
+              <TableSortLabel
+                active={orderBy === row.id}
+                direction={order}
+                onClick={this.createSortHandler(row.id, row.sortable)}
+              >
+                {row.label}
+              </TableSortLabel>
+            </TableCell>
+          ))}
+          {hasEditing && <TableCell />}
         </TableRow>
       </TableHead>
     );

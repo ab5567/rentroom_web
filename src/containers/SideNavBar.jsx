@@ -10,7 +10,6 @@ import Avatar from '@material-ui/core/Avatar';
 import { logOut } from 'actions/index';
 import { media } from 'modules/theme';
 
-
 const Nav = styled.nav`
   z-index: 999;
   display: flex;
@@ -20,7 +19,7 @@ const Nav = styled.nav`
   width: 250px;
   background-color: #333333;
   overflow: hidden;
-  transition:width .3s linear;
+  transition: width 0.3s linear;
   padding: 20px 0px;
   position: fixed;
   top: 0;
@@ -37,9 +36,8 @@ const Nav = styled.nav`
 
   ${media.mobile`
     left: 100%;
-    transform: translateX(${props => props.mobileOpened ? '-100' : '0'}%);
+    transform: translateX(${props => (props.mobileOpened ? '-100' : '0')}%);
   `};
-
 `;
 
 const UserSection = styled.div`
@@ -67,7 +65,6 @@ const UserSection = styled.div`
     height: 80px;
     border-radius: 40px;
   }
-
 `;
 
 const MenuLink = styled(NavLink)`
@@ -84,9 +81,11 @@ const MenuLink = styled(NavLink)`
     white-space: nowrap;
   }
 
-  &:hover, &:focus, &.selected {
+  &:hover,
+  &:focus,
+  &.selected {
     text-decoration: none;
-    background: #4b74ff;    
+    background: #4b74ff;
   }
 `;
 
@@ -104,9 +103,10 @@ const MenuExternalLink = styled.a`
     white-space: nowrap;
   }
 
-  &:hover, &:focus {
+  &:hover,
+  &:focus {
     text-decoration: none;
-    background: #4b74ff;    
+    background: #4b74ff;
   }
 `;
 
@@ -117,13 +117,10 @@ class SideNavBar extends React.PureComponent {
     dispatch: PropTypes.func,
   };
 
-
   handleClickLogout = () => {
     const { dispatch } = this.props;
     dispatch(logOut());
   };
-
-
 
   render() {
     const { user, mobileOpened } = this.props;
@@ -147,23 +144,26 @@ class SideNavBar extends React.PureComponent {
         {/* <MenuLink to="/fireadmin/listings" className="listings" activeClassName="selected">
           <span>Listings</span>
         </MenuLink> */}
-        <MenuLink to="/fireadmin/maintenance"  activeClassName="selected">
+        <MenuLink to="/fireadmin/maintenance" activeClassName="selected">
           <span>Maintenance</span>
         </MenuLink>
         <MenuLink to="/fireadmin/community" activeClassName="selected">
           <span>Community</span>
+        </MenuLink>
+        <MenuLink to="/fireadmin/reports" activeClassName="selected">
+          <span>Reports</span>
         </MenuLink>
         {/* <MenuLink to="/fireadmin/metriccs" className="metriccs" activeClassName="selected">
           <span>Metrics</span>
         </MenuLink> */}
         <MenuExternalLink href="https://connect.stripe.com/express/oauth/authorize?redirect_uri=&client_id=ca_DkHC2qSIwRYt66xQqUrDNmkgbyzeoyMv">
           <span>Payments Setup</span>
-        </MenuExternalLink> 
+        </MenuExternalLink>
         <MenuExternalLink href="https://ryan-915d2.firebaseapp.com/">
           <span>Help</span>
-        </MenuExternalLink> 
+        </MenuExternalLink>
         <button onClick={this.handleClickLogout}>Logout</button>
-      </Nav> 
+      </Nav>
     );
   }
 }
