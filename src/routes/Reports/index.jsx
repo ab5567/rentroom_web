@@ -10,6 +10,8 @@ import Header from 'containers/Header';
 import { firebaseDatabase } from 'config/firebase';
 import { exportCSV } from 'modules/helpers';
 import Grid from '@material-ui/core/Grid';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import Checkbox from '@material-ui/core/Checkbox';
 import Button from 'components/Button';
 
 import TextField from '@material-ui/core/TextField';
@@ -50,9 +52,31 @@ const TextFieldWrapper = styled.div`
   }
 `;
 
+const CheckBoxWrapper = styled.div`
+  display: flex;
+  margin-top: 5px;
+  align-items: center;
+  label {
+    min-width: 5rem;
+    text-align: left;
+    font-size: 1rem;
+    margin-right: 2rem;
+  }
+`;
+
 const PDFContainer = styled.iframe`
   width: 100%;
-  min-height: 600px;
+  min-height: 700px;
+`;
+
+const CheckBox = styled(Checkbox)`
+  &&& {
+    padding: 0px 6px 0px 12px;
+  }
+`;
+
+const CheckLabel = styled.div`
+  font-size: 1rem;
 `;
 
 const GenerateButton = styled(Button)`
@@ -65,7 +89,7 @@ const GenerateButton = styled(Button)`
 const ReportTypes = [
   'Customer Listing', 
   'Open Work Orders', 
-  // 'Rent Roll Analysis', 
+  'Rent Roll Analysis', 
   'Profit and Loss (P&L)', 
   // 'Property by Property P&L', 
   // 'All Expenses', 
@@ -88,7 +112,8 @@ export class Reports extends React.PureComponent {
     properties: [],
     exportType: ExportTypes[0],
     csvData: null,
-    pdfUrl: null
+    pdfUrl: null,
+    isAllPropertySelected: false
   }
 
   handleStateChange = (state) => {
@@ -117,6 +142,8 @@ export class Reports extends React.PureComponent {
     let newValue
     if (key === 'properties') {
       newValue = event
+    } else if (key === 'isAllPropertySelected') {
+      newValue = event.target.checked
     } else {
       newValue = event.target.value
     }
@@ -124,8 +151,20 @@ export class Reports extends React.PureComponent {
       [key]: {$set: newValue},
       error: {$set: null},
     }
+    
+    const suggestions = this.props.allProperties.map(p => ({
+      value: p.id,
+      label: p.name,
+    }))
 
-    if ((key === 'reportType' && this.state.reportType !== event.target.value) || key === 'properties')  { 
+    if (key === 'properties') {
+      updatedValues.isAllPropertySelected = {$set: newValue.length === suggestions.length};
+    }
+    if (key === 'isAllPropertySelected') {
+      updatedValues.properties = {$set: newValue ? suggestions : []}
+    }
+
+    if (key !== 'title' && key !== 'exportType')  { 
       updatedValues.csvData = {$set: null};
       updatedValues.pdfUrl = {$set: null};
     }
@@ -150,7 +189,7 @@ export class Reports extends React.PureComponent {
     
   render() {
     const { isResidentsLoaded, isPropertiesLoaded, allProperties } = this.props;
-    const { title, reportType, startDate, endDate, properties, exportType, pdfUrl } = this.state;
+    const { title, reportType, startDate, endDate, properties, exportType, pdfUrl, isAllPropertySelected } = this.state;
 
     let suggestions = []
     if (isPropertiesLoaded) {
@@ -172,13 +211,18 @@ export class Reports extends React.PureComponent {
             <Grid item xs md={6} lg={7}>
               <Wrapper>
                 <h2>Preview</h2>
-                {exportType === 'PDF' 
-                  ? <PDFContainer src={pdfUrl}/>
-                  : <ReportTable
-                      formData={this.state}
-                    />
+                {pdfUrl 
+                  ? <Fragment>
+                      {exportType === 'PDF'
+                        ? <PDFContainer src={pdfUrl}/>
+                        : <ReportTable
+                            formData={this.state}
+                          />
+                      }
+                    </Fragment>
+                  : <div>Generate a report by entering information in the form</div>
                 }
-              </Wrapper>
+               </Wrapper>
             </Grid>
             <Grid item xs md={6} lg={5}>
               <Wrapper>
@@ -230,6 +274,19 @@ export class Reports extends React.PureComponent {
                     onChange={this.handleChange('properties')}
                   />
                 </TextFieldWrapper>
+                <CheckBoxWrapper>
+                  <label></label>
+                  <FormControlLabel
+                    control={
+                      <CheckBox
+                        color="primary"
+                        checked={isAllPropertySelected}
+                        onChange={this.handleChange('isAllPropertySelected')}
+                      />
+                    }
+                    label={<CheckLabel>All</CheckLabel>}
+                  />
+                </CheckBoxWrapper>
                 <TextFieldWrapper>
                   <label>Export Type</label>
                   <Select
@@ -243,6 +300,7 @@ export class Reports extends React.PureComponent {
                   variant="contained" 
                   color="default"
                   onClick={this.handleGenerateReport}
+                  disabled={properties.length === 0}
                 >
                   Generate Report
                 </GenerateButton>

@@ -2,6 +2,7 @@ import moment from 'moment'
 import customerListing from './customerListing'
 import openWorkOrders from './openWorkOrders'
 import profitAndLoss from './profitAndLoss'
+import rentRollAnalysis from './rentRollAnalysis'
 
 
 const createReportData = (allRawData, formData) => {
@@ -20,7 +21,11 @@ const createReportData = (allRawData, formData) => {
       case 'Profit and Loss (P&L)': {
         reportData = profitAndLoss(allRawData, formData)
         break;
-      }    
+      } 
+      case 'Rent Roll Analysis': {
+        reportData = rentRollAnalysis(allRawData, formData)
+        break;
+      }      
     }
 
     const pdfContent = [
