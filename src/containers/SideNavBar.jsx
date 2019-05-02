@@ -9,6 +9,9 @@ import { utils } from 'styled-minimal';
 import Avatar from '@material-ui/core/Avatar';
 import { logOut } from 'actions/index';
 import { media } from 'modules/theme';
+import { firebaseDatabase } from 'config/firebase';
+import { getFirebasePaths } from 'constants/index';
+import axios from 'axios';
 
 const Nav = styled.nav`
   z-index: 999;
@@ -98,6 +101,7 @@ const MenuExternalLink = styled.a`
   color: white;
   padding: 10px 40px;
   font-size: 14px;
+  pointer-events: ${props => props.isActive ? 'all' : 'none'};
 
   span {
     white-space: nowrap;
@@ -117,13 +121,54 @@ class SideNavBar extends React.PureComponent {
     dispatch: PropTypes.func,
   };
 
+  state = {
+    paymentStateLoaded: false,
+    paymentLink: 'https://connect.stripe.com/express/oauth/authorize?redirect_uri=&client_id=ca_DkHC2qSIwRYt66xQqUrDNmkgbyzeoyMv',
+    paymentLabel: 'Payments'
+  }
+
   handleClickLogout = () => {
     const { dispatch } = this.props;
     dispatch(logOut());
   };
 
+  componentDidMount() {
+    const { user } = this.props;
+    firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${user.uid}/stripeAccountId`).once('value', snapshot => {
+
+      const stripeAccountId = snapshot.val();
+      if (stripeAccountId) {
+        axios
+        .post('https://us-central1-rentroom-dev.cloudfunctions.net/stripeconnectlink', {
+          stripe_auth_code: stripeAccountId,
+        })
+        .then(response => {
+          if (response.status == 200) {
+            this.setState({
+              paymentLink: response.data.url,
+              paymentStateLoaded: true,
+              paymentLabel: 'Payments'
+            })
+          }
+        })
+        .catch(error => {
+          console.log(error);
+        });
+        
+      } else {
+        this.setState({
+          paymentLink: 'https://connect.stripe.com/express/oauth/authorize?redirect_uri=&client_id=ca_DkHC2qSIwRYt66xQqUrDNmkgbyzeoyMv',
+          paymentStateLoaded: true,
+          paymentLabel: 'Payments Setup'
+        })
+      }
+    });
+  }
+
   render() {
-    const { user, mobileOpened } = this.props;
+    const { mobileOpened } = this.props;
+    const { paymentStateLoaded, paymentLink, paymentLabel } = this.state;
+
     return (
       <Nav mobileOpened={mobileOpened}>
         <UserSection>
@@ -156,8 +201,8 @@ class SideNavBar extends React.PureComponent {
         {/* <MenuLink to="/fireadmin/metriccs" className="metriccs" activeClassName="selected">
           <span>Metrics</span>
         </MenuLink> */}
-        <MenuExternalLink href="https://connect.stripe.com/express/oauth/authorize?redirect_uri=&client_id=ca_DkHC2qSIwRYt66xQqUrDNmkgbyzeoyMv">
-          <span>Payments Setup</span>
+        <MenuExternalLink href={paymentLink} isActive={paymentStateLoaded}>
+          <span>{paymentLabel}</span>
         </MenuExternalLink>
         <MenuExternalLink href="https://ryan-915d2.firebaseapp.com/">
           <span>Help</span>
@@ -169,7 +214,9 @@ class SideNavBar extends React.PureComponent {
 }
 
 function mapStateToProps(state) {
-  return { user: state.user };
+  return { 
+    user: state.user
+  };
 }
 
 export default connect(mapStateToProps)(SideNavBar);
