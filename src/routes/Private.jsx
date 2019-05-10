@@ -310,7 +310,7 @@ export class Private extends React.PureComponent {
         <SideNavBar mobileOpened={openMobileMenu} {...this.props} />
         <Body mobileOpened={openMobileMenu}>
           <MobileHeader>
-            <span>RENT ROOM</span>
+            <span>RENTROOM</span>
             <ButtonBase onClick={this.handleMobileMenu}>
               {openMobileMenu ? <CloseIcon /> : <MenuIcon />}
             </ButtonBase>
@@ -351,6 +351,12 @@ export class Private extends React.PureComponent {
               <RoutePrivate
                 isAuthenticated
                 path={`${baseUrl}/maintenance`}
+                exact
+                component={Maintenance}
+              />
+               <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/storage`}
                 exact
                 component={Maintenance}
               />

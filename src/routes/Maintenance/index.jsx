@@ -85,7 +85,7 @@ export class Maintenance extends React.PureComponent {
         item.subject = object.subject;
         item.photo = object.photo; 
         item.message = object.message; 
-        item.status = object.status ? object.status : 'Opened'
+        item.status = object.status ? object.status : 'Open'
         if (item.tenant) {
           allData.push(item);
         }

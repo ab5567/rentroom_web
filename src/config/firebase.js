@@ -57,6 +57,8 @@ export function signInWithEmailAndPassword(email, password) {
   });
 }
 
+
+
 export function signOut() {
   return new Promise((resolve, reject) => {
     FirebaseSDK.auth().signOut()

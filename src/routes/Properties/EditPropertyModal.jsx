@@ -62,15 +62,16 @@ const ImageWrapper = styled.div`
 
 const AddColDefs = [
   { id: 'image', label: 'Image', type: 'image', editable: true },
-  { id: 'location', label: 'Location', type: 'text', editable: true },
-  { id: 'state', label: 'State', type: 'state', editable: true },
+  { id: 'location', label: 'Street Address', type: 'text', editable: true },
   { id: 'city', label: 'City', type: 'city', editable: true },
+  { id: 'state', label: 'State', type: 'state', editable: true },
+  
 ];
 
 const EditColDefs = [
   { id: 'image', label: 'Image', type: 'image', editable: true },
-  { id: 'state', label: 'State', type: 'state', editable: true },
   { id: 'city', label: 'City', type: 'city', editable: true },
+  { id: 'state', label: 'State', type: 'state', editable: true },
 ];
 
 export class EditPropertyModal extends React.PureComponent {

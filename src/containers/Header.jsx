@@ -12,6 +12,7 @@ import EditIcon from '@material-ui/icons/Edit';
 import rgba from 'polished/lib/color/rgba';
 import Button from 'components/Button';
 import Grid from '@material-ui/core/Grid';
+import SearchIcon from '@material-ui/icons/Search';
 
 const Wrapper = styled.div`
   min-height: 80px;
@@ -67,6 +68,7 @@ class Header extends React.PureComponent {
     onExport: PropTypes.func,
     onPrint: PropTypes.func,
     onSave: PropTypes.func,
+    onScreen: PropTypes.func,
     title: PropTypes.string.isRequired,
   };
 
@@ -81,6 +83,7 @@ class Header extends React.PureComponent {
       onSave,
       bulkDeleteDisabled,
       onEdit,
+      onScreen,
       addButtonTitle,
       editButtonTitle,
     } = this.props;
@@ -110,6 +113,12 @@ class Header extends React.PureComponent {
                     Add Expenses &amp; Revenues
                     <AddIcon />
                   </Button>
+                )}
+                {onScreen && (
+                  <Button variant="contained" color="default" onClick={onScreen}>
+                    {addButtonTitle || 'Screen Tenants'}
+                    <SearchIcon />
+                  </Button>  
                 )}
                 {onBulkDelete && (
                   <Button

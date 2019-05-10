@@ -12,6 +12,7 @@ import { exportCSV } from 'modules/helpers';
 import Table from 'components/Table';
 import Progress from 'components/Progress';
 import AddEditResidentModal from './AddEditResidentModal';
+import axios from 'axios';
 
 import { getFirebasePaths } from 'constants/index';
 
@@ -75,6 +76,7 @@ export class Residents extends React.PureComponent {
     selected.forEach(id => {
       deletingItems[id] = null;
     });
+
     
     firebaseDatabase.ref(getFirebasePaths(this.props.user.uid).RESIDENTS).update(deletingItems).then((error) => {
       if (error) {
@@ -85,6 +87,27 @@ export class Residents extends React.PureComponent {
     });;
   }
 
+  handleScreen = showScreen => () => {
+    this.setState({ isLoading: true });
+
+  axios({
+      method: 'post',
+      url: ('https://us-central1-ryan-915d2.cloudfunctions.net/screenCustomer'),
+    
+      }).then( (response) => {
+        const firebasePath = "property_groups/amicus_properties/screeningOrder/";
+        this._databaseRef = firebaseDatabase.ref(firebasePath);
+        this._databaseRef.once('value').then((snapshot) => {
+          var link = snapshot.val();
+          console.log("Screening Link", snapshot);
+          window.open(link);
+          this.setState({ showScreen });
+        });
+      }).catch(function (error) {
+        console.log("Error Response", error);
+      }); 
+    };
+    
   handleEditItem = (itemId) => {
     const selectedItem = this.props.residents.find(item => item.id === itemId);
     this.setState({
@@ -144,6 +167,7 @@ export class Residents extends React.PureComponent {
           title="Residents"
           bulkDeleteDisabled={selected.length === 0}
           onExport={this.handleExport}
+          onScreen={this.handleScreen(true)}
           onBulkDelete={this.handleBulkDelete}
         />
         <SearchSection

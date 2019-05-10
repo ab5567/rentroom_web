@@ -132,7 +132,7 @@ const chartOptions = {
 
 const ColDefs = [
   { id: 'name', numeric: false, disablePadding: false, label: 'Name', sortable: true },
-  { id: 'price', numeric: false, disablePadding: false, label: 'Ballance', sortable: true },
+  { id: 'price', numeric: false, disablePadding: false, label: 'Balance', sortable: true },
 ];
 
 const ExpenseColDefs = [

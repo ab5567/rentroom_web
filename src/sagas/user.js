@@ -108,6 +108,7 @@ export function* logout() {
   }
 }
 
+
 /**
  * User Sagas
  */
@@ -116,5 +117,6 @@ export default function* root() {
     takeLatest(ActionTypes.FETCH_USER, fetchUser),
     takeLatest(ActionTypes.USER_LOGIN, login),
     takeLatest(ActionTypes.USER_LOGOUT, logout),
+
   ]);
 }

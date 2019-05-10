@@ -15,6 +15,7 @@ import PhoneInput from 'components/PhoneInput';
 import StateInput from 'components/StateInput';
 import CityInput from 'components/CityInput';
 import ErrorLabel from 'components/ErrorLabel';
+import axios from 'axios';
 
 const TextFieldWrapper = styled.div`
   display: flex;
@@ -143,6 +144,7 @@ export class AddEditResidentModal extends React.PureComponent {
     return valid;
   }
 
+
   handleSave = () => {
     if (!this.validation()) {
       return;
@@ -153,6 +155,7 @@ export class AddEditResidentModal extends React.PureComponent {
     if (!id) {
       id = firebaseDatabase.ref(firebaseUrl.RESIDENTS).push().key;
       console.log('New Key', id);
+
     } 
     const ref = firebaseDatabase.ref(`${firebaseUrl.RESIDENTS}/${id}`);
     ref.update(this.state.data).then((error) => {

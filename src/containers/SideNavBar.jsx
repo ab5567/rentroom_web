@@ -12,6 +12,16 @@ import { media } from 'modules/theme';
 import { firebaseDatabase } from 'config/firebase';
 import { getFirebasePaths } from 'constants/index';
 import axios from 'axios';
+import DashboardIcon from '@material-ui/icons/Dashboard';
+import MessageIcon from '@material-ui/icons/Message';
+import HomeIcon from '@material-ui/icons/Home';
+import PersonIcon from '@material-ui/icons/Person';
+import HelpIcon from '@material-ui/icons/Help';
+import CommunityIcon from '@material-ui/icons/Announcement';
+import ChartIcon from '@material-ui/icons/InsertChart';
+import MoneyIcon from '@material-ui/icons/AttachMoney';
+import DocsIcon from '@material-ui/icons/LibraryBooks';
+
 
 const Nav = styled.nav`
   z-index: 999;
@@ -72,13 +82,13 @@ const UserSection = styled.div`
 
 const MenuLink = styled(NavLink)`
   width: 100%;
-  height: 40px;
+  height: 50px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
   color: white;
   padding: 10px 40px;
-  font-size: 14px;
+  font-size: 15px;
 
   span {
     white-space: nowrap;
@@ -94,13 +104,13 @@ const MenuLink = styled(NavLink)`
 
 const MenuExternalLink = styled.a`
   width: 100%;
-  height: 40px;
+  height: 50px;
   display: flex;
   justify-content: flex-start;
   align-items: center;
   color: white;
   padding: 10px 40px;
-  font-size: 14px;
+  font-size: 15px;
   pointer-events: ${props => props.isActive ? 'all' : 'none'};
 
   span {
@@ -114,6 +124,11 @@ const MenuExternalLink = styled.a`
   }
 `;
 
+const Logos = styled.div`
+padding: 10px;
+right: 1rem;
+`;
+
 const isActive = (path, match, location) => !!(match || path === location.pathname);
 
 class SideNavBar extends React.PureComponent {
@@ -123,7 +138,7 @@ class SideNavBar extends React.PureComponent {
 
   state = {
     paymentStateLoaded: false,
-    paymentLink: 'https://connect.stripe.com/express/oauth/authorize?redirect_uri=&client_id=ca_DkHC2qSIwRYt66xQqUrDNmkgbyzeoyMv',
+    paymentLink: 'https://connect.stripe.com/express/oauth/authorize?redirect_uri=&client_id=ca_DkHCisWdsaFR5yZe0gOL2Kys1WNu4CSm',
     paymentLabel: 'Payments'
   }
 
@@ -139,7 +154,7 @@ class SideNavBar extends React.PureComponent {
       const stripeAccountId = snapshot.val();
       if (stripeAccountId) {
         axios
-        .post('https://us-central1-rentroom-dev.cloudfunctions.net/stripeconnectlink', {
+        .post('https://us-central1-ryan-915d2.cloudfunctions.net/stripeconnectlink', {
           stripe_auth_code: stripeAccountId,
         })
         .then(response => {
@@ -157,7 +172,7 @@ class SideNavBar extends React.PureComponent {
         
       } else {
         this.setState({
-          paymentLink: 'https://connect.stripe.com/express/oauth/authorize?redirect_uri=&client_id=ca_DkHC2qSIwRYt66xQqUrDNmkgbyzeoyMv',
+          paymentLink: 'https://connect.stripe.com/express/oauth/authorize?redirect_uri=&client_id=ca_DkHCisWdsaFR5yZe0gOL2Kys1WNu4CSm',
           paymentStateLoaded: true,
           paymentLabel: 'Payments Setup'
         })
@@ -172,40 +187,44 @@ class SideNavBar extends React.PureComponent {
     return (
       <Nav mobileOpened={mobileOpened}>
         <UserSection>
-          <span>RENT ROOM</span>
+          <span>RENTROOM</span>
           {/* <div></div> */}
           {/* <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" className={classes.avatar} /> */}
           {/* <span>{user.email}</span> */}
         </UserSection>
         <MenuLink to="/fireadmin/dashboard" exact={true} activeClassName="selected">
+          <Logos><DashboardIcon /></Logos>
           <span>Dashboard</span>
         </MenuLink>
         <MenuLink to="/fireadmin/properties" exact={true} activeClassName="selected">
+        <Logos><HomeIcon /></Logos>
           <span>Properties</span>
         </MenuLink>
         <MenuLink to="/fireadmin/residents" activeClassName="selected">
-          <span>Resident</span>
+        <Logos><PersonIcon /></Logos>
+          <span>Residents</span>
         </MenuLink>
         {/* <MenuLink to="/fireadmin/listings" className="listings" activeClassName="selected">
           <span>Listings</span>
         </MenuLink> */}
         <MenuLink to="/fireadmin/maintenance" activeClassName="selected">
+        <Logos><MessageIcon /></Logos>
           <span>Maintenance</span>
         </MenuLink>
         <MenuLink to="/fireadmin/community" activeClassName="selected">
+          <Logos><CommunityIcon /></Logos>
           <span>Community</span>
         </MenuLink>
         <MenuLink to="/fireadmin/reports" activeClassName="selected">
+        <Logos><ChartIcon /></Logos>
           <span>Reports</span>
         </MenuLink>
         {/* <MenuLink to="/fireadmin/metriccs" className="metriccs" activeClassName="selected">
           <span>Metrics</span>
         </MenuLink> */}
         <MenuExternalLink href={paymentLink} isActive={paymentStateLoaded}>
+        <Logos><MoneyIcon /></Logos>
           <span>{paymentLabel}</span>
-        </MenuExternalLink>
-        <MenuExternalLink href="https://ryan-915d2.firebaseapp.com/">
-          <span>Help</span>
         </MenuExternalLink>
         <button onClick={this.handleClickLogout}>Logout</button>
       </Nav>
