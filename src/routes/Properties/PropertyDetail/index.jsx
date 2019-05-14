@@ -265,22 +265,16 @@ export class PropertyDetail extends React.PureComponent {
 
   handleMarkAsPaid = (residentId, residents) => {
     const { user, dispatch } = this.props;
-    const resident = residents.find(el => el.id === residentId && el.uid);
-
-    if (!resident) {
-      dispatch(showAlert('This register is not verified.', { variant: 'danger', icon: 'bell' }));
-      return;
-    }
-
-    console.log('mark as paid', resident);
+    const resident = residents.find(el => el.id === residentId);
+    const propertyId = resident.address
 
     const updates = {};
-    updates[`/paymentHistory/${this.state.month}`] = `$${resident.price}`;
-    updates['/price'] = 0;
+    updates[`/payments/${residentId}/${this.state.month}`] = resident.monthlyRent //`$${resident.price}`;
+    updates[`/residents/${residentId}/price`] = 0;
 
     firebaseDatabase
-      .ref(`${getFirebasePaths(user.uid).RESIDENTS}/${resident.uid}`)
-      .update(updates)
+    .ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}`)
+    .update(updates)
       .then(error => {
         if (error) {
           console.log('Mark As Paid Error', error);
@@ -322,29 +316,12 @@ export class PropertyDetail extends React.PureComponent {
       };
     }
 
-    const validResidents = [];
-    let rentRoll = 0;
+    const validResidents = property.residents;
+    let rentRoll = property.rentRoll
     let paid = 0;
-    property.residents.forEach(tenant => {
-      let validTenant = tenant;
-      if (tenant.uid) {
-        const registeredResident = residents.find(resident => resident.id === tenant.uid);
-        if (registeredResident) {
-          validTenant = {
-            ...registeredResident,
-            uid: tenant.uid,
-            id: tenant.id,
-          };
-        }
-      }
-      rentRoll += getCurrencyValue(validTenant.monthlyRent);
-      // rentRoll += parseFloat(validTenant.price) ? parseFloat(validTenant.price) : 0;
-      if (validTenant.paymentHistory && validTenant.paymentHistory[month]) {
-        const paidValue = getCurrencyValue(validTenant.paymentHistory[month]);
-        paid += paidValue || 0;
-      }
-      validResidents.push(validTenant);
-    });
+
+    const monthPayments = property.payments.filter(p => p.month === month);
+    paid = _.sumBy(monthPayments, function(o) { return getCurrencyValue(o.amount); });
 
     const filterArray = validResidents.filter(item => {
       let shouldShow = true;
@@ -390,7 +367,6 @@ export class PropertyDetail extends React.PureComponent {
     let revenues = [];
 
     if (isPropertyLoaded) {
-      console.log('Current Month', month);
       expenses = property.accounts.filter(
         a => a.logType === 'Expense' && moment(a.date).format('MMMYYYY') === month,
       );

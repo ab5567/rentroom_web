@@ -68,13 +68,10 @@ export class AddEditResident extends React.PureComponent {
   }
 
   processData = (data) => {
-    console.log('Record', data);
     this.setState(data)
   }
 
   handleChange = key => event => {
-    console.log('Key', key);
-    console.log('Value', event.target.value);
     this.setState({ [key]: event.target.value });
   };
 

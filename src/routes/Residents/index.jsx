@@ -77,14 +77,29 @@ export class Residents extends React.PureComponent {
       deletingItems[id] = null;
     });
 
+    const selectedItem = this.props.residents.find(item => item.id === selected[0]);
+    const propertyId = selectedItem.address
+
+    const { user } = this.props;
+    firebaseDatabase
+      .ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/residents`)
+      .update(deletingItems)
+      .then(error => {
+        if (error) {
+          console.log('Bulk Delete Error', error);
+          return;
+        }
+        this.setState({ selected: [] });
+      });
+
     
-    firebaseDatabase.ref(getFirebasePaths(this.props.user.uid).RESIDENTS).update(deletingItems).then((error) => {
-      if (error) {
-        console.log('Bulk Delete Error', error);
-        return;
-      }
-      this.setState({ selected: [] });
-    });;
+    // firebaseDatabase.ref(getFirebasePaths(this.props.user.uid).RESIDENTS).update(deletingItems).then((error) => {
+    //   if (error) {
+    //     console.log('Bulk Delete Error', error);
+    //     return;
+    //   }
+    //   this.setState({ selected: [] });
+    // });;
   }
 
   handleScreen = showScreen => () => {
@@ -99,7 +114,6 @@ export class Residents extends React.PureComponent {
         this._databaseRef = firebaseDatabase.ref(firebasePath);
         this._databaseRef.once('value').then((snapshot) => {
           var link = snapshot.val();
-          console.log("Screening Link", snapshot);
           window.open(link);
           this.setState({ showScreen });
         });
@@ -117,12 +131,18 @@ export class Residents extends React.PureComponent {
   }
 
   handleDeleteItem = (itemId) => {
-    firebaseDatabase.ref(getFirebasePaths(this.props.user.uid).RESIDENTS).update({ [itemId]: null }).then((error) => {
-      if (error) {
-        console.log('Delete Error', error);
-        return;
-      }
-    });;
+    const selectedItem = this.props.residents.find(item => item.id === itemId);
+    const propertyId = selectedItem.address
+
+    const { user } = this.props;
+    firebaseDatabase
+      .ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/residents`)
+      .update({ [itemId]: null })
+      .then(error => {
+        if (error) {
+          console.log('Delete Error', error);
+        }
+      });
   }
 
   handleModal = showModal => () => {
@@ -159,7 +179,7 @@ export class Residents extends React.PureComponent {
     const { isResidentsLoaded } = this.props;
     const { order, orderBy, selected, rowsPerPage, page } = this.state;
     const data = this.sortAndFilterArray();
-    console.log('STATE', selected)
+
     return (
       <Fragment>
         <Progress loading={!isResidentsLoaded}/>

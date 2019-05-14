@@ -114,7 +114,6 @@ export class AddEditCommunityModal extends React.PureComponent {
     let id = this.props.data.id;
     if (!id) {
       id = firebaseDatabase.ref(firebasePath.COMMUNITY).push().key;
-      console.log('New Key', id);
     } 
     const ref = firebaseDatabase.ref(`${firebasePath.COMMUNITY}/${id}`);
     ref.update(this.state.data).then((error) => {

@@ -135,7 +135,6 @@ export class AddEditResidentModal extends React.PureComponent {
     validationCols.forEach(col => {
       const filledItem = this.state.data[col.id];
       if (!filledItem) {
-        console.log('Missing Item', col);
         this.setState({ error: `${col.label} is empty.` });
         valid = false;
         return;
@@ -151,20 +150,32 @@ export class AddEditResidentModal extends React.PureComponent {
     }
     let id = this.props.data.id;
     const { user } = this.props;
-    const firebaseUrl = getFirebasePaths(user.uid);
-    if (!id) {
-      id = firebaseDatabase.ref(firebaseUrl.RESIDENTS).push().key;
-      console.log('New Key', id);
+    const propertyId = this.state.data.address
 
-    } 
-    const ref = firebaseDatabase.ref(`${firebaseUrl.RESIDENTS}/${id}`);
-    ref.update(this.state.data).then((error) => {
+    if (!id) {
+      id = firebaseDatabase.ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/residents`).push().key;
+    }
+
+    const savingData = _.omit(this.state.data, ['paymentHistory', 'image']);
+    // if (data.uid) {
+    //   const ref = firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${data.uid}`);
+    //   ref.update(savingData).then((error) => {
+    //     if (error) {
+    //       console.log('Save Error', error);
+    //       return;
+    //     }
+    //   });
+    // }
+
+    const ref = firebaseDatabase.ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/residents/${id}`);
+    ref.update(savingData).then((error) => {
       this.handleClose();
       if (error) {
         console.log('Save Error', error);
         return;
       }
-    });;
+    });
+
   }
 
   handleClose = () => {

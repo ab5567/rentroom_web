@@ -155,7 +155,6 @@ export class AddExpenseRevenueModal extends React.PureComponent {
     validationCols.forEach(col => {
       const filledItem = this.state.data[col.id];
       if (!filledItem) {
-        console.log('Missing Item', col);
         this.setState({ error: `${col.label} is empty.` });
         valid = false;
       }
@@ -179,11 +178,9 @@ export class AddExpenseRevenueModal extends React.PureComponent {
       id = firebaseDatabase
         .ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/accounts`)
         .push().key;
-      console.log('New Key', id);
     } else {
       id = data.id;
     }
-    console.log('Saving Data', serverData);
 
     const ref = firebaseDatabase.ref(
       `${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/accounts/${id}`,
@@ -271,7 +268,6 @@ export class AddExpenseRevenueModal extends React.PureComponent {
     const colDefs = isRevenueMode ? RevenueColDefs : ExpenseColDefs;
     const isCustomType = this.state.data.type === 'Custom';
 
-    console.log('AccountsModal', this.state);
     return (
       <Modal open={open} onClose={this.handleClose} fullWidth maxWidth="md">
         <ModalTitle>{this.props.data ? 'Edit' : 'Add'} Expense or Revenue</ModalTitle>

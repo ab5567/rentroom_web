@@ -91,7 +91,6 @@ export class Properties extends React.PureComponent {
   }
 
   handleDeleteItem = (itemId) => {
-    console.log('Deleting Item', itemId);
     const { user } = this.props;
     firebaseDatabase.ref(getFirebasePaths(user.uid).PROPERTIES).update({ [itemId]: null }).then((error) => {
       if (error) {

@@ -145,7 +145,6 @@ export class EditPropertyModal extends React.PureComponent {
     validationCols.forEach(col => {
       const filledItem = this.state.data[col.id];
       if (!filledItem) {
-        console.log('Missing Item', col);
         this.setState({ error: `${col.label} is empty.` });
         valid = false;
         return;

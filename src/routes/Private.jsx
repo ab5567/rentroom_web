@@ -35,7 +35,7 @@ import {
   fetchMaintenancesSuccess,
 } from 'actions/index';
 
-import { setPropertyGroup, getPropertyGroup } from 'modules/helpers';
+import { setPropertyGroup, getPropertyGroup, getCurrencyValue } from 'modules/helpers';
 import { Typography } from '@material-ui/core';
 
 const Screen = styled.div`
@@ -121,7 +121,6 @@ export class Private extends React.PureComponent {
       websiteUrl = window.location.href.substring(0, questionIndex);
       console.log('Stripe code', stripeCode);
       console.log('websiteUrl', websiteUrl);
-      console.log(this.props);
 
       // https://us-central1-ryan-915d2.cloudfunctions.net/createStripeAccount
       // https://us-central1-rentroom-dev.cloudfunctions.net/createStripeAccount
@@ -136,7 +135,6 @@ export class Private extends React.PureComponent {
           property_group: propertyGroup,
         })
         .then(response => {
-          console.log(response);
           if (response.status == 200) {
             this.setState({ showStripeModal: true });
           }
@@ -164,7 +162,7 @@ export class Private extends React.PureComponent {
     const propertyGroup = getPropertyGroup(userId);
     if (propertyGroup) {
       this.checkStripe();
-      this.startFetchAddresses();
+      // this.startFetchAddresses();
       this.startFetchMaintenances();
       this.startFetchProperties();
     } else {
@@ -175,7 +173,7 @@ export class Private extends React.PureComponent {
         if (groupId) {
           setPropertyGroup(userId, groupId);
           this.checkStripe();
-          this.startFetchAddresses();
+          // this.startFetchAddresses();
           this.startFetchMaintenances();
           this.startFetchProperties();
         } else {
@@ -185,35 +183,35 @@ export class Private extends React.PureComponent {
     }
   };
 
-  startFetchAddresses = () => {
-    const { dispatch, user } = this.props;
-    firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENT_ADDRESSES).on('value', snapshot => {
-      const addresses = snapshot.val();
-      console.log('Updating Addresses Store...', addresses);
-      dispatch(fetchAddressesSuccess(addresses));
-      this.startFetchResidents();
-    });
-  };
+  // startFetchAddresses = () => {
+  //   const { dispatch, user } = this.props;
+  //   firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENT_ADDRESSES).on('value', snapshot => {
+  //     const addresses = snapshot.val();
+  //     console.log('Updating Addresses Store...', addresses);
+  //     dispatch(fetchAddressesSuccess(addresses));
+  //     this.startFetchResidents();
+  //   });
+  // };
 
-  startFetchResidents = () => {
-    const { dispatch, data, user } = this.props;
-    const { addresses } = data;
-    firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENTS).on('value', snapshot => {
-      const residents = snapshot.val();
-      console.log('Updating Resident Store...', residents);
-      const allData = [];
-      for (const key in residents) {
-        const item = residents[key];
-        item.id = key;
-        item.city = item.city || item.City;
-        item.state = item.state || item.State;
-        item.image = item.image || item.img;
-        item.address = addresses[key] ? addresses[key].Address : '';
-        allData.push(item);
-      }
-      dispatch(fetchResidentsSuccess(allData));
-    });
-  };
+  // startFetchResidents = () => {
+  //   const { dispatch, data, user } = this.props;
+  //   const { addresses } = data;
+  //   firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENTS).on('value', snapshot => {
+  //     const residents = snapshot.val();
+  //     console.log('Updating Resident Store...', residents);
+  //     const allData = [];
+  //     for (const key in residents) {
+  //       const item = residents[key];
+  //       item.id = key;
+  //       item.city = item.city || item.City;
+  //       item.state = item.state || item.State;
+  //       item.image = item.image || item.img;
+  //       item.address = addresses[key] ? addresses[key].Address : '';
+  //       allData.push(item);
+  //     }
+  //     dispatch(fetchResidentsSuccess(allData));
+  //   });
+  // };
 
   startFetchMaintenances = () => {
     const { dispatch, user } = this.props;
@@ -257,6 +255,7 @@ export class Private extends React.PureComponent {
       const records = snapshot.val();
       console.log('Updating Properties Store...', records);
       const allData = [];
+      const allResidents = [];
       for (const key in records) {
         const record = records[key];
         const item = {};
@@ -270,15 +269,39 @@ export class Private extends React.PureComponent {
           item.photo = object.img || object.image;
         }
 
+        const payments = [];
+        for (const userKey in record.payments) {
+          const userPayments = record.payments[userKey];
+          for (const monthKey in userPayments) {
+            const paymentAmount = userPayments[monthKey];
+            const payment = {
+              resident: userKey,
+              amount: paymentAmount,
+              month: monthKey
+            }
+            payments.push(payment)
+          }
+        }
+        item.payments = payments;
+
+        let rentRoll = 0;
         const residents = [];
         for (const userKey in record.residents) {
           const resident = record.residents[userKey];
           if (resident) {
             resident.id = userKey;
+            resident.city = resident.city || resident.City;
+            resident.state = resident.state || resident.State;
+            resident.image = resident.image || resident.img;
+            resident.address = key;
+            resident.paymentHistory = record.payments ? record.payments[userKey] : name;
             residents.push(resident);
+            allResidents.push(resident);
+            rentRoll += (resident.monthlyRent ? getCurrencyValue(resident.monthlyRent) : 0);
           }
         }
         item.residents = residents;
+        item.rentRoll = rentRoll
 
         const accounts = [];
         for (const userKey in record.accounts) {
@@ -292,6 +315,7 @@ export class Private extends React.PureComponent {
         allData.push(item);
       }
       dispatch(fetchPropertiesSuccess(allData));
+      dispatch(fetchResidentsSuccess(allResidents));
     });
   };
 

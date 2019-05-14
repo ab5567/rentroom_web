@@ -153,8 +153,6 @@ class ExtendedTable extends React.Component {
     const hasEditing = onEditItem || onDeleteItem;
     const hasSelection = selected !== null && selected !== undefined;
 
-    console.log('Props', this.props);
-
     return (
       <StyledTable aria-labelledby="tableTitle" csvformat={csvFormat.toString()}>
         <TableHeader

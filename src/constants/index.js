@@ -59,7 +59,6 @@ export const FIRE_DATA_PATHS = {
 
 export function getFirebasePaths(userId) {
   const groupId = getPropertyGroup(userId);
-  console.log('Getting firebase paths', userId)
 
   if (!groupId) {
     return {};

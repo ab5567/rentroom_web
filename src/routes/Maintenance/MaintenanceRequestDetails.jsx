@@ -183,7 +183,6 @@ export class MaintenanceRequestDetails extends React.PureComponent {
   }
 
   processData = (data) => {
-    console.log('Record', data);
     const { tenant, tenant_email, tenant_phone, subject } = data;
     const messages = [];
     for (var key in data.messages){

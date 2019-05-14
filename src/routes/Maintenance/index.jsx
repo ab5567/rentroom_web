@@ -133,7 +133,6 @@ export class Maintenance extends React.PureComponent {
   }
 
   handleEditItem = (itemId) => {
-    console.log('Edit item', itemId);
     history.push(`${this.props.match.url}/${itemId}`)
   }
 

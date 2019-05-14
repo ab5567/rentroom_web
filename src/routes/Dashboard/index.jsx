@@ -180,37 +180,17 @@ export class Dashboard extends React.PureComponent {
     const { month } = this.state;
 
     const calculatedProperties = properties.map(property => {
-      const tenants = property.residents;
-      let rentRoll = 0;
-      let paid = 0;
-      tenants.forEach(tenant => {
-        let validTenant = tenant;
-        if (tenant.uid) {
-          const registeredResident = residents.find(resident => resident.id === tenant.uid);
-          if (registeredResident) {
-            console.log('Registered Resident', tenant);
-            validTenant = registeredResident;
-          }
-        }
-        rentRoll += getCurrencyValue(validTenant.monthlyRent);
-        // rentRoll += parseFloat(validTenant.price) ? parseFloat(validTenant.price) : 0;
-        if (validTenant.paymentHistory && validTenant.paymentHistory[month]) {
-          const paidValue = getCurrencyValue(validTenant.paymentHistory[month]);
-          paid += paidValue ? paidValue : 0;
-          console.log('Paid Resident', tenant);
-          console.log('Paid Value', paidValue);
-        }
-      });
+      let paid = 0
+      const monthPayments = property.payments.filter(p => p.month === month);
+      paid = _.sumBy(monthPayments, function(o) { return getCurrencyValue(o.amount); });
 
-      const progress = rentRoll ? Math.round((paid / rentRoll) * 100)  : 0;
+      const progress = property.rentRoll ? Math.round((paid / property.rentRoll) * 100)  : 0;
       return {
         ...property,
-        rentRoll,
         paid,
         progress: progress + '%'
       }
     })
-    console.log('calculatedProperties', calculatedProperties);
     return calculatedProperties;
   }
 
@@ -266,7 +246,6 @@ export class Dashboard extends React.PureComponent {
       totalProgress
     } = this.getTotalStatics(paymentProgressData);
 
-    console.log(this.state);
     return (
       <Fragment>
         <Progress loading={loading} />

@@ -72,7 +72,6 @@ export class AddEditCommunity extends React.PureComponent {
   }
 
   processData = (data) => {
-    console.log('Record', data);
     if (!data.date && data.timestamp) {
       const timestamp = Math.round(parseFloat(data.timestamp));
       data.date = moment.unix(timestamp).format('YYYY-MM-DD');
@@ -81,21 +80,17 @@ export class AddEditCommunity extends React.PureComponent {
   }
 
   handleChange = key => event => {
-    console.log('Key', key);
-    console.log('Value', event.target.value);
 
     const newState = update(this.state, {data: {[key]: {$set: event.target.value }}});
     this.setState(newState);
   };
 
   handleSave = () => {
-    console.log('aaa', this.state.data);
     this._databaseRef.update(this.state.data).then((error) => {
       if (error) {
         console.log('Save Error', error);
         return;
       }
-      console.log('Success');
     });;
   }
 

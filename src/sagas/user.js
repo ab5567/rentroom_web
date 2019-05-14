@@ -15,7 +15,6 @@ import Config from 'config/app';
 
 export function* fetchUser() {
   try {
-    console.log('Fetching user...');
     const user = yield call(onAuthStateChanged);
     console.log('Firebase User', user);
 
@@ -65,13 +64,9 @@ export function* fetchUser() {
  */
 export function* login(loginAction) {
   try {
-    console.log('Logging in....', loginAction);
     const { email, password } = loginAction.payload;
     // const res = yield call(signInWithEmailAndPassword, 'austin@austin.com', 'austin');
     const res = yield call(signInWithEmailAndPassword, email, password);
-
-    console.log('Login Result', res);
-
     const payload = {
       email: res.user.email,
       uid: res.user.uid
