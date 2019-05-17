@@ -16,15 +16,11 @@ const getPDFTable = (allRawData, formData) => {
       { colSpan: 4, text: property.name, style: 'tableHeader' }, '', '', ''
     ])
     property.residents.forEach((resident, index) => {
-      let address = ''
-      if(resident.uid) {
-        address = ((allRawData.addresses[resident.uid] || {}).Address) || ''
-      }
 
       const fillColor = (index % 2 === 0) ? '#CCCCCC' : null
       const customer = [
         { text: resident.name, fillColor },
-        { text: address, fillColor },
+        { text: resident.address, fillColor },
         { text: resident['lease start'], fillColor },
         { text: resident['lease end'], fillColor }
       ];
@@ -64,14 +60,10 @@ const getCSVFormat = (allRawData, formData) => {
   const tableBody = [];
   validProperties.forEach(property => {
     property.residents.forEach((resident, index) => {
-      let address = ''
-      if(resident.uid) {
-        address = ((allRawData.addresses[resident.uid] || {}).Address) || ''
-      }
       const customer = {
          property: property.name, 
          customerName: resident.name,
-         address: address,
+         address: resident.address,
          leaseStart: resident['lease start'],
          leaseEnd: resident['lease end'], 
       };

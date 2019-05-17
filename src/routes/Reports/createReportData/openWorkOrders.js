@@ -19,7 +19,9 @@ const getPDFTable = (allRawData, formData) => {
     const uid = m.messages[0].sender;
     let address = ''
     if(uid) {
-      address = ((allRawData.addresses[uid] || {}).Address) || ''
+      const resident = allRawData.residents.find(r => r.uid === uid) 
+      address = resident ? resident.address :  ''
+      // address = ((allRawData.addresses[uid] || {}).Address) || ''
     }
     const date = moment.unix(Math.round(parseFloat(m.messages[0].timestamp ))).format('M/D/YYYY, h:mm a'); 
     const issue = [
@@ -62,7 +64,8 @@ const getCSVFormat = (allRawData, formData) => {
     const uid = m.messages[0].sender;
     let address = ''
     if(uid) {
-      address = ((allRawData.addresses[uid] || {}).Address) || ''
+      const resident = allRawData.residents.find(r => r.uid === uid) 
+      address = resident ? resident.address :  ''
     }
     const date = moment.unix(Math.round(parseFloat(m.messages[0].timestamp ))).format('M/D/YYYY, h:mm a'); 
     const customer = {

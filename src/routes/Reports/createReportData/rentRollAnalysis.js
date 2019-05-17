@@ -37,27 +37,22 @@ const getPDFTable = (allRawData, formData) => {
 
   let fillColor = null;
   validProperties.forEach(property => {
-    property.residents.forEach(tenant => {
-      if (tenant.uid) {
-        const resident = allRawData.residents.find(r => r.id === tenant.uid);
-        if (resident) {
-          fillColor = fillColor ? null : '#cccccc'
-          const row = [
-            { text: resident.name, fillColor },
-            { text: property.name, fillColor },
-          ];
-          monthHeaders.forEach(mh => {
-            const month = moment(mh, 'MMM YYYY').format("MMMYYYY");
-            let amount = 0;
-            if (resident.paymentHistory && resident.paymentHistory[month]) {
-              amount = getCurrencyValue(resident.paymentHistory[month]);
-            }
-            totals[mh] = (totals[mh] || 0) + amount
-            row.push({ text: `$${numberWithCommas(amount)}`, fillColor })
-          })
-          tableBody.push(row)
+    property.residents.forEach(resident => {
+      fillColor = fillColor ? null : '#cccccc'
+      const row = [
+        { text: resident.name, fillColor },
+        { text: property.name, fillColor },
+      ];
+      monthHeaders.forEach(mh => {
+        const month = moment(mh, 'MMM YYYY').format("MMMYYYY");
+        let amount = 0;
+        if (resident.paymentHistory && resident.paymentHistory[month]) {
+          amount = getCurrencyValue(resident.paymentHistory[month]);
         }
-      }
+        totals[mh] = (totals[mh] || 0) + amount
+        row.push({ text: `$${numberWithCommas(amount)}`, fillColor })
+      })
+      tableBody.push(row)
     })
   })
 
@@ -114,26 +109,21 @@ const getCSVFormat = (allRawData, formData) => {
   const tableBody = [];
 
   validProperties.forEach(property => {
-    property.residents.forEach(tenant => {
-      if (tenant.uid) {
-        const resident = allRawData.residents.find(r => r.id === tenant.uid);
-        if (resident) {
-          const row = {
-            customer: resident.name,
-            address: property.name
-          };        
-          
-          monthHeaders.forEach(mh => {
-            const month = moment(mh, 'MMM YYYY').format("MMMYYYY");
-            let amount = 0;
-            if (resident.paymentHistory && resident.paymentHistory[month]) {
-              amount = getCurrencyValue(resident.paymentHistory[month]);
-            }
-            row[mh] = `$${numberWithCommas(amount)}`;
-          })
-          tableBody.push(row)
+    property.residents.forEach(resident => {
+      const row = {
+        customer: resident.name,
+        address: property.name
+      };        
+      
+      monthHeaders.forEach(mh => {
+        const month = moment(mh, 'MMM YYYY').format("MMMYYYY");
+        let amount = 0;
+        if (resident.paymentHistory && resident.paymentHistory[month]) {
+          amount = getCurrencyValue(resident.paymentHistory[month]);
         }
-      }
+        row[mh] = `$${numberWithCommas(amount)}`;
+      })
+      tableBody.push(row)
     })
   })
 
@@ -145,7 +135,7 @@ const getCSVFormat = (allRawData, formData) => {
   )
 }
 
-const customerListing = (allRawData, formData) => {
+const rentRollAnalysis = (allRawData, formData) => {
   console.log('allRawData', allRawData)
   console.log('formData', formData)
   return (
@@ -156,4 +146,4 @@ const customerListing = (allRawData, formData) => {
   )
 }
 
-export default customerListing
+export default rentRollAnalysis

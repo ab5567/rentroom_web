@@ -2,7 +2,9 @@ import moment from 'moment'
 import times from 'lodash/times'
 import uniq from 'lodash/uniq'
 import constant from 'lodash/constant'
-import { numberWithCommas } from '../../../modules/helpers';
+import { numberWithCommas, getCurrencyValue } from '../../../modules/helpers';
+import sumBy from 'lodash/sumBy';
+
 
 const getPDFTable = (allRawData, formData) => {
 
@@ -41,32 +43,42 @@ const getPDFTable = (allRawData, formData) => {
     if (property.accounts) {
       incomes = property.accounts.filter(a => a.logType === 'Revenue')
     }
-    if (incomes.length > 0) {
-      tableBody.push([
-        { colSpan: tableHeader.length, text: property.name, style: 'tableHeader' }, ...emptyCells
-      ])
 
-      const RevenueTypes = uniq(incomes.map(i => i.type))
-      let fillColor = null;
-      RevenueTypes.forEach(rt => {
-        const revenueIncomes = incomes.filter(i => i.type === rt);
-        fillColor = fillColor ? null : '#cccccc'
-        const row = [{ text: rt, fillColor }];
-        monthHeaders.forEach(mh => {
-          const monthStart = moment(mh, 'MMM YYYY').startOf('month').format('YYYY-MM-DD');
-          const monthEnd = moment(mh, 'MMM YYYY').endOf('month').format('YYYY-MM-DD');
-          let amount = 0;
-          revenueIncomes.forEach(ri => {
-            if (ri.date >= monthStart && ri.date <= monthEnd) {
-              amount = ri.amount
-            } 
-          })
-          totalIncomes[mh] = (totalIncomes[mh] || 0) + amount
-          row.push({ text: `$${numberWithCommas(amount)}`, fillColor })
+    tableBody.push([
+      { colSpan: tableHeader.length, text: property.name, style: 'tableHeader' }, ...emptyCells
+    ])
+
+    let fillColor = '#cccccc';
+    const row = [{ text: 'Rent', fillColor }];
+    monthHeaders.forEach(mh => {
+      const month = moment(mh, 'MMM YYYY').format("MMMYYYY");
+      const monthPayments = property.payments.filter(p => p.month === month);
+      const amount = sumBy(monthPayments, function(o) { return getCurrencyValue(o.amount); });      
+      totalIncomes[mh] = (totalIncomes[mh] || 0) + amount
+      row.push({ text: `$${numberWithCommas(amount)}`, fillColor })
+    })
+    tableBody.push(row)
+
+    const RevenueTypes = uniq(incomes.map(i => i.type))
+    RevenueTypes.forEach(rt => {
+      const revenueIncomes = incomes.filter(i => i.type === rt);
+      fillColor = fillColor ? null : '#cccccc'
+      const row = [{ text: rt, fillColor }];
+      monthHeaders.forEach(mh => {
+        const monthStart = moment(mh, 'MMM YYYY').startOf('month').format('YYYY-MM-DD');
+        const monthEnd = moment(mh, 'MMM YYYY').endOf('month').format('YYYY-MM-DD');
+        let amount = 0;
+        revenueIncomes.forEach(ri => {
+          if (ri.date >= monthStart && ri.date <= monthEnd) {
+            amount = ri.amount
+          } 
         })
-        tableBody.push(row)
+        totalIncomes[mh] = (totalIncomes[mh] || 0) + amount
+        row.push({ text: `$${numberWithCommas(amount)}`, fillColor })
       })
-    }
+      tableBody.push(row)
+    })
+
   })
 
   const totalIncomeRow = [{ text: `Total Income:`, style: 'totalRow' }];
@@ -181,34 +193,46 @@ const getCSVFormat = (allRawData, formData) => {
   const tableBody = [];
 
   validProperties.forEach(property => {
+
+    const row = {
+      property: property.name,
+      logType: 'Revenue',
+      type: 'Rent'
+    };    
+
+    monthHeaders.forEach(mh => {
+      const month = moment(mh, 'MMM YYYY').format("MMMYYYY");
+      const monthPayments = property.payments.filter(p => p.month === month);
+      const amount = sumBy(monthPayments, function(o) { return getCurrencyValue(o.amount); });      
+      row[mh] = `$${numberWithCommas(amount)}`;
+    })
+    tableBody.push(row)
+
     let incomes = [];
     if (property.accounts) {
       incomes = property.accounts.filter(a => a.logType === 'Revenue')
     }
-    if (incomes.length > 0) {
-      const RevenueTypes = uniq(incomes.map(i => i.type))
-
-      RevenueTypes.forEach(rt => {
-        const revenueIncomes = incomes.filter(i => i.type === rt);
-        const row = {
-          property: property.name,
-          logType: 'Revenue',
-          type: rt
-        };        
-        monthHeaders.forEach(mh => {
-          const monthStart = moment(mh, 'MMM YYYY').startOf('month').format('YYYY-MM-DD');
-          const monthEnd = moment(mh, 'MMM YYYY').endOf('month').format('YYYY-MM-DD');
-          let amount = 0;
-          revenueIncomes.forEach(ri => {
-            if (ri.date >= monthStart && ri.date <= monthEnd) {
-              amount = ri.amount
-            } 
-          })
-          row[mh] = `$${numberWithCommas(amount)}`;
+    const RevenueTypes = uniq(incomes.map(i => i.type))
+    RevenueTypes.forEach(rt => {
+      const revenueIncomes = incomes.filter(i => i.type === rt);
+      const row = {
+        property: property.name,
+        logType: 'Revenue',
+        type: rt
+      };        
+      monthHeaders.forEach(mh => {
+        const monthStart = moment(mh, 'MMM YYYY').startOf('month').format('YYYY-MM-DD');
+        const monthEnd = moment(mh, 'MMM YYYY').endOf('month').format('YYYY-MM-DD');
+        let amount = 0;
+        revenueIncomes.forEach(ri => {
+          if (ri.date >= monthStart && ri.date <= monthEnd) {
+            amount = ri.amount
+          } 
         })
-        tableBody.push(row)
+        row[mh] = `$${numberWithCommas(amount)}`;
       })
-    }
+      tableBody.push(row)
+    })
   })
 
 
@@ -251,7 +275,7 @@ const getCSVFormat = (allRawData, formData) => {
   )
 }
 
-const customerListing = (allRawData, formData) => {
+const profitAndLoss = (allRawData, formData) => {
   console.log('allRawData', allRawData)
   console.log('formData', formData)
   return (
@@ -262,4 +286,4 @@ const customerListing = (allRawData, formData) => {
   )
 }
 
-export default customerListing
+export default profitAndLoss

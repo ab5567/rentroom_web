@@ -219,7 +219,6 @@ export class PropertyDetail extends React.PureComponent {
           console.log('Bulk Delete Error', error);
           return;
         }
-        this.refreshData();
       });
   };
 

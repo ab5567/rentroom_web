@@ -162,7 +162,7 @@ export class Private extends React.PureComponent {
     const propertyGroup = getPropertyGroup(userId);
     if (propertyGroup) {
       this.checkStripe();
-      // this.startFetchAddresses();
+      this.startFetchAddresses();
       this.startFetchMaintenances();
       this.startFetchProperties();
     } else {
@@ -173,7 +173,7 @@ export class Private extends React.PureComponent {
         if (groupId) {
           setPropertyGroup(userId, groupId);
           this.checkStripe();
-          // this.startFetchAddresses();
+          this.startFetchAddresses();
           this.startFetchMaintenances();
           this.startFetchProperties();
         } else {
@@ -183,15 +183,15 @@ export class Private extends React.PureComponent {
     }
   };
 
-  // startFetchAddresses = () => {
-  //   const { dispatch, user } = this.props;
-  //   firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENT_ADDRESSES).on('value', snapshot => {
-  //     const addresses = snapshot.val();
-  //     console.log('Updating Addresses Store...', addresses);
-  //     dispatch(fetchAddressesSuccess(addresses));
-  //     this.startFetchResidents();
-  //   });
-  // };
+  startFetchAddresses = () => {
+    const { dispatch, user } = this.props;
+    firebaseDatabase.ref(getFirebasePaths(user.uid).RESIDENT_ADDRESSES).on('value', snapshot => {
+      const addresses = snapshot.val();
+      console.log('Updating Addresses Store...', addresses);
+      dispatch(fetchAddressesSuccess(addresses));
+      // this.startFetchResidents();
+    });
+  };
 
   // startFetchResidents = () => {
   //   const { dispatch, data, user } = this.props;
