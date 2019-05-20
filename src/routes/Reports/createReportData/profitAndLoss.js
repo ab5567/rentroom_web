@@ -70,7 +70,7 @@ const getPDFTable = (allRawData, formData) => {
         let amount = 0;
         revenueIncomes.forEach(ri => {
           if (ri.date >= monthStart && ri.date <= monthEnd) {
-            amount = ri.amount
+            amount += ri.amount
           } 
         })
         totalIncomes[mh] = (totalIncomes[mh] || 0) + amount
@@ -118,7 +118,7 @@ const getPDFTable = (allRawData, formData) => {
           let amount = 0;
           expenseIncomes.forEach(ei => {
             if (ei.date >= monthStart && ei.date <= monthEnd) {
-              amount = ei.amount
+              amount += ei.amount
             } 
           })
           totalExpenses[mh] = (totalExpenses[mh] || 0) + amount
@@ -226,7 +226,7 @@ const getCSVFormat = (allRawData, formData) => {
         let amount = 0;
         revenueIncomes.forEach(ri => {
           if (ri.date >= monthStart && ri.date <= monthEnd) {
-            amount = ri.amount
+            amount += ri.amount
           } 
         })
         row[mh] = `$${numberWithCommas(amount)}`;
@@ -257,7 +257,7 @@ const getCSVFormat = (allRawData, formData) => {
           let amount = 0;
           expenseIncomes.forEach(ei => {
             if (ei.date >= monthStart && ei.date <= monthEnd) {
-              amount = ei.amount
+              amount += ei.amount
             } 
           })
           row[mh] = `$${numberWithCommas(amount)}`;
