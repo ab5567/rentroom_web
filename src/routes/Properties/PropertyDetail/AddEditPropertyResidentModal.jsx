@@ -100,7 +100,7 @@ export class AddEditPropertyResidentModal extends React.PureComponent {
       id = firebaseDatabase.ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}/residents`).push().key;
     } 
 
-    const savingData = _.omit(this.state.data, ['paymentHistory', 'image']);
+    const savingData = _.omit(this.state.data, ['paymentHistory', 'image', 'status']);
     // if (data.uid) {
     //   const ref = firebaseDatabase.ref(`${getFirebasePaths(user.uid).RESIDENTS}/${data.uid}`);
     //   ref.update(savingData).then((error) => {

@@ -117,6 +117,12 @@ class ExtendedTable extends React.Component {
     }
   };
 
+  handleMarkAsPastTenant = itemId => () => {
+    if (this.props.onMarkItemAsPaid) {
+      this.props.onMarkItemAsPastTenant(itemId);
+    }
+  };
+
   handlClickRow = itemId => () => {
     // if (this.props.onClickRow) {
     //   this.props.onClickRow(itemId)
@@ -143,6 +149,7 @@ class ExtendedTable extends React.Component {
       onDeleteItem,
       onCloseRequestItem,
       onMarkItemAsPaid,
+      onMarkItemAsPastTenant,
       csvFormat,
     } = this.props;
 
@@ -177,8 +184,10 @@ class ExtendedTable extends React.Component {
               menuProps.onCloseRequest = this.handleCloseMaintenanceRequest(item.id);
             }
             if (onMarkItemAsPaid) {
-              // Only show it to registered user
               menuProps.onMarkAsPaid = this.handleMarkAsPaid(item.id);
+            }
+            if (onMarkItemAsPastTenant) {
+              menuProps.onMarkAsPastTenant = this.handleMarkAsPastTenant(item.id);
             }
 
             return (

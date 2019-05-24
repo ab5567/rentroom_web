@@ -13,6 +13,7 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import CloseIcon from '@material-ui/icons/Close';
 import PaymentIcon from '@material-ui/icons/AttachMoney';
+import UserIcon from '@material-ui/icons/SupervisedUserCircle';
 
 
 const ButtonLabel = styled.span`
@@ -25,6 +26,7 @@ class EditMenu extends React.Component {
     onDelete: PropTypes.func,
     onCloseRequest: PropTypes.func,
     onMarkAsPaid: PropTypes.func,
+    onMarkAsPastTenant: PropTypes.func
   }
 
   state = {
@@ -64,12 +66,18 @@ class EditMenu extends React.Component {
     this.setState({ anchorEl: null });
     this.props.onMarkAsPaid();
   }
-  
+
+  handleMarkAsPastTenant = (event) => {
+    event.stopPropagation();
+    this.setState({ anchorEl: null });
+    this.props.onMarkAsPastTenant();
+  }
+   
 
   render() {
     const { anchorEl } = this.state;
     const open = Boolean(anchorEl);
-    const { onEdit, onDelete, onCloseRequest, onMarkAsPaid } = this.props;
+    const { onEdit, onDelete, onCloseRequest, onMarkAsPaid, onMarkAsPastTenant } = this.props;
     return (
       <div>
         <IconButton
@@ -122,6 +130,13 @@ class EditMenu extends React.Component {
                   <MenuItem onClick={this.handleMarkAsPaid}>
                     <PaymentIcon/> 
                     <ButtonLabel>Mark as Paid</ButtonLabel>
+                  </MenuItem>
+                }
+                {
+                  onMarkAsPastTenant &&
+                  <MenuItem onClick={this.handleMarkAsPastTenant}>
+                    <UserIcon/> 
+                    <ButtonLabel>Mark as Past Tenant</ButtonLabel>
                   </MenuItem>
                 }
               </MenuList>

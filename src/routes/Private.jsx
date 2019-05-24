@@ -294,10 +294,13 @@ export class Private extends React.PureComponent {
             resident.state = resident.state || resident.State;
             resident.image = resident.image || resident.img;
             resident.address = key;
+            resident.status = resident.pastTenant ? 'Past' : 'Active'
             resident.paymentHistory = record.payments ? record.payments[userKey] : name;
             residents.push(resident);
             allResidents.push(resident);
-            rentRoll += (resident.monthlyRent ? getCurrencyValue(resident.monthlyRent) : 0);
+            if (!resident.pastTenant) {
+              rentRoll += (resident.monthlyRent ? getCurrencyValue(resident.monthlyRent) : 0);
+            }
           }
         }
         item.residents = residents;

@@ -133,6 +133,7 @@ const chartOptions = {
 const ColDefs = [
   { id: 'name', numeric: false, disablePadding: false, label: 'Name', sortable: true },
   { id: 'price', numeric: false, disablePadding: false, label: 'Balance', sortable: true },
+  { id: 'status', numeric: false, disablePadding: false, label: 'Status', sortable: true },
 ];
 
 const ExpenseColDefs = [
@@ -280,6 +281,26 @@ export class PropertyDetail extends React.PureComponent {
         }
       });
   };
+
+
+  handleMarkAsPastTenant = (residentId, residents) => {
+    const { user } = this.props;
+    const resident = residents.find(el => el.id === residentId);
+    const propertyId = resident.address
+
+    const updates = {};
+    updates[`/residents/${residentId}/pastTenant`] = true;
+
+    firebaseDatabase
+    .ref(`${getFirebasePaths(user.uid).PROPERTIES}/${propertyId}`)
+    .update(updates)
+      .then(error => {
+        if (error) {
+          console.log('Mark As Past Tenant Error', error);
+        }
+      });
+  };
+
 
   handleEditProperty = () => {
     this.setState({ showEditPropertyModal: true });
@@ -449,6 +470,7 @@ export class PropertyDetail extends React.PureComponent {
               onEditItem={this.handleEditItem}
               onDeleteItem={this.handleDeleteItem}
               onMarkItemAsPaid={id => this.handleMarkAsPaid(id, residents)}
+              onMarkItemAsPastTenant={id => this.handleMarkAsPastTenant(id, residents)}
             />
           </SubSection>
           {expenses.length > 0 && (
