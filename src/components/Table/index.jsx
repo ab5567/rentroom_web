@@ -102,7 +102,7 @@ class ExtendedTable extends React.Component {
   };
 
   handleEditItem = itemId => () => {
-    let isEditable = this.props.user.role === 'Manager'
+    let isEditable = this.props.user.role === 'Manager' || this.props.user.role === 'Maintenance' 
     if (window.location.pathname === '/fireadmin/properties') {
       isEditable = true
     }

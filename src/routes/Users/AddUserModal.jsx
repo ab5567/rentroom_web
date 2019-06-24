@@ -202,8 +202,8 @@ export class AddUserModal extends React.PureComponent {
     if (!id) {
       // const url = 'http://localhost:8080/public/send-pre-approval-link-email';
       const url = 'https://us-central1-rentroom-dev.cloudfunctions.net/sendAdminSignupEmail'
-      // const link = `http://localhost:3000/admin-signup?email=${email}&property_group=${propertyGroup}&role=${role}&properties=${propertiesString}`;
-      const link = `https://admin.getrentroom.com/admin-signup?email=${email}&property_group=${propertyGroup}&role=${role}&properties=${propertiesString}`
+      const link = `http://localhost:3000/admin-signup?email=${email}&property_group=${propertyGroup}&role=${role}&properties=${propertiesString}`;
+      // const link = `https://admin.getrentroom.com/admin-signup?email=${email}&property_group=${propertyGroup}&role=${role}&properties=${propertiesString}`
 
       axios.post(url, {
         email,
