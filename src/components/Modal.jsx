@@ -47,7 +47,7 @@ export const ModalActions = (props) => (
       <CloseIcon/>
     </Button>
     <Button onClick={props.onSave} color="default">
-      Save
+      {props.actionTitle || 'Save'}
       <SaveIcon/>
     </Button>
   </ModalBottomSection>

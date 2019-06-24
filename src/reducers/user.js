@@ -8,7 +8,10 @@ export const userState = {
   status: STATUS.IDLE,
   uid: null,
   email: null,
-  loginErrorMsg: null
+  property_groups: null,
+  role: null,
+  loginErrorMsg: null,
+  admins: []
 };
 
 export default {
@@ -18,14 +21,17 @@ export default {
         immutable(state, {
           status: { $set: STATUS.RUNNING },
         }),
-      [ActionTypes.USER_LOGIN_SUCCESS]: (state, action) => 
-          immutable(state, {
-            isAuthenticated: { $set: true },
-            status: { $set: STATUS.READY },
-            uid: { $set: action.payload.uid },
-            email: { $set: action.payload.email },
-            loginErrorMsg: { $set: null }
-          }),
+      [ActionTypes.USER_LOGIN_SUCCESS]: (state, action) => {
+        return (
+          {
+            ...state,
+            status: STATUS.READY,
+            loginErrorMsg: null,
+            isAuthenticated: true,
+            ...action.payload,
+          }
+        )
+      },
       [ActionTypes.USER_LOGIN_FAILURE]: (state, action) => 
           immutable(state, {
             loginErrorMsg: { $set: action.payload }

@@ -12,6 +12,8 @@ export const dataState = {
   properties: [],
   isMaintenanceLoaded: false,
   maintenances: [],
+  isAdminsLoaded: false,
+  admins: [],
 };
 
 export default {
@@ -36,6 +38,11 @@ export default {
           immutable(state, {
             maintenances: { $set: action.payload },
             isMaintenanceLoaded: { $set: true },
+          }),
+      [ActionTypes.FETCH_ADMINS_SUCCESS]: (state, action) => 
+          immutable(state, {
+            admins: { $set: action.payload },
+            isAdminsLoaded: { $set: true },
           }),
     },
     dataState,

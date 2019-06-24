@@ -1,12 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
+import { connect } from 'react-redux';
 
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
 import TableCell from '@material-ui/core/TableCell';
 import TableRow from '@material-ui/core/TableRow';
 import Checkbox from '@material-ui/core/Checkbox';
+import Chip from '@material-ui/core/Chip';
 import TableHeader from 'components/Table/TableHeader';
 import EditMenu from 'components/EditMenu';
 import { numberWithCommas } from '../../modules/helpers';
@@ -32,6 +34,12 @@ const Photo = styled.img`
   width: 200px;
   height: 130px;
   object-fit: cover;
+`;
+
+const PropertyItem = styled(Chip)`
+  &&& {
+    margin-right: 5px;
+  }
 `;
 
 class ExtendedTable extends React.Component {
@@ -94,7 +102,11 @@ class ExtendedTable extends React.Component {
   };
 
   handleEditItem = itemId => () => {
-    if (this.props.onEditItem) {
+    let isEditable = this.props.user.role === 'Manager'
+    if (window.location.pathname === '/fireadmin/properties') {
+      isEditable = true
+    }
+    if (this.props.onEditItem && isEditable) {
       this.props.onEditItem(itemId);
     }
   };
@@ -136,6 +148,21 @@ class ExtendedTable extends React.Component {
     return false;
   };
 
+  renderCell = (item, col) => {
+    if (col.id === 'photo') {
+      return <Photo src={item.photo ? item.photo : PlaceholderPropertyImage} />
+    } else if (col.id === 'price' || col.id === 'rentRoll' || col.id === 'paid' || col.id === 'amount') {
+      return `$${numberWithCommas(item[col.id])}`
+    } else if (col.id === 'properties') {
+      const properties = item[col.id]
+      return (
+        properties ? properties.split(',').map(p => <PropertyItem key={p} size="small" label={p}/>) : null
+      )
+    }else {
+      return item[col.id]
+    }
+  };
+
   render() {
     const {
       data,
@@ -151,14 +178,15 @@ class ExtendedTable extends React.Component {
       onMarkItemAsPaid,
       onMarkItemAsPastTenant,
       csvFormat,
+      user
     } = this.props;
 
     if (data.length === 0) {
       return <div />;
     }
     const emptyRows = rowsPerPage - Math.min(rowsPerPage, data.length - page * rowsPerPage);
-    const hasEditing = onEditItem || onDeleteItem;
-    const hasSelection = selected !== null && selected !== undefined;
+    const hasEditing = (onEditItem || onDeleteItem) && user.role === 'Manager';
+    const hasSelection = selected !== null && selected !== undefined && user.role === 'Manager';
 
     return (
       <StyledTable aria-labelledby="tableTitle" csvformat={csvFormat.toString()}>
@@ -214,16 +242,7 @@ class ExtendedTable extends React.Component {
                     align="left"
                     padding={col.disablePadding ? 'none' : 'dense'}
                   >
-                    {col.id === 'photo' ? (
-                      <Photo src={item.photo ? item.photo : PlaceholderPropertyImage} />
-                    ) : col.id === 'price' ||
-                      col.id === 'rentRoll' ||
-                      col.id === 'paid' ||
-                      col.id === 'amount' ? (
-                      `$${numberWithCommas(item[col.id])}`
-                    ) : (
-                      item[col.id]
-                    )}
+                    {this.renderCell(item, col)}
                   </TableCell>
                 ))}
                 {hasEditing && (
@@ -249,4 +268,10 @@ class ExtendedTable extends React.Component {
   };
 }
 
-export default ExtendedTable;
+function mapStateToProps(state) {
+  return { 
+    user: state.user
+  };
+}
+
+export default connect(mapStateToProps)(ExtendedTable);

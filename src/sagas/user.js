@@ -5,6 +5,7 @@
 
 import { delay } from 'redux-saga';
 import { all, call, put, takeLatest } from 'redux-saga/effects';
+import { push } from 'modules/history'
 
 import { ActionTypes } from 'constants/index';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'config/firebase';
@@ -75,6 +76,7 @@ export function* login(loginAction) {
       type: ActionTypes.USER_LOGIN_SUCCESS,
       payload
     });
+    push('/fireadmin');
   } catch (err) {
     /* istanbul ignore next */
     console.log(err);

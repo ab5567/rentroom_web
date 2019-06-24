@@ -14,6 +14,7 @@ import config from 'config';
 import { showAlert, fetchUser } from 'actions/index';
 
 import Home from 'routes/Home';
+import AdminSignup from 'routes/AdminSignup';
 import Private from 'routes/Private';
 import NotFound from 'routes/NotFound';
 
@@ -88,6 +89,12 @@ export class App extends React.Component {
                   path="/signin"
                   exact
                   component={Home}
+                />
+                <RoutePublic
+                  isAuthenticated={false}
+                  path="/admin-signup"
+                  exact
+                  component={AdminSignup}
                 />
                 <RoutePrivate
                   isAuthenticated={user.isAuthenticated}

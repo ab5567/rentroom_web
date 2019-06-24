@@ -9,11 +9,13 @@ import { ActionTypes } from 'constants/index';
 
 export const { 
   userLogin: login, 
-  userLogout: logOut, 
+  userLoginSuccess,
+  userLogout: logOut,
   fetchUser, 
   userLoginFailure: resetLoginFailure, 
 } = createActions({
   [ActionTypes.USER_LOGIN]: (email, password) => ({ email, password }),
+  [ActionTypes.USER_LOGIN_SUCCESS]: (admin) => (admin),
   [ActionTypes.USER_LOGIN_FAILURE]: () => (null),
   [ActionTypes.USER_LOGOUT]: () => ({}),
   [ActionTypes.FETCH_USER]: () => ({}),

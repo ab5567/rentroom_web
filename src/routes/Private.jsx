@@ -14,11 +14,13 @@ import Dashboard from 'routes/Dashboard';
 import Residents from 'routes/Residents';
 import AddEditResident from 'routes/Residents/AddEditResident';
 import Community from 'routes/Community';
+import Invoices from 'routes/Invoices';
 import Reports from 'routes/Reports';
 import AddEditCommunity from 'routes/Community/AddEditCommunity';
 import Properties from 'routes/Properties';
 import PropertyDetail from 'routes/Properties/PropertyDetail';
 import Maintenance from 'routes/Maintenance';
+import Users from 'routes/Users';
 import MaintenanceRequestDetails from 'routes/Maintenance/MaintenanceRequestDetails';
 import RoutePrivate from 'components/RoutePrivate';
 import { media } from 'modules/theme';
@@ -33,6 +35,8 @@ import {
   fetchAddressesSuccess,
   fetchPropertiesSuccess,
   fetchMaintenancesSuccess,
+  fetchAdminsSuccess,
+  userLoginSuccess
 } from 'actions/index';
 
 import { setPropertyGroup, getPropertyGroup, getCurrencyValue } from 'modules/helpers';
@@ -158,29 +162,25 @@ export class Private extends React.PureComponent {
   };
 
   startFetchingFirebaseData = () => {
-    const userId = this.props.user.uid;
-    const propertyGroup = getPropertyGroup(userId);
-    if (propertyGroup) {
-      this.checkStripe();
-      this.startFetchAddresses();
-      this.startFetchMaintenances();
-      this.startFetchProperties();
-    } else {
-      firebaseDatabase.ref('admins').once('value', snapshot => {
-        const admins = snapshot.val();
-        console.log('Admins...', admins);
-        const groupId = admins[userId].property_groups;
-        if (groupId) {
-          setPropertyGroup(userId, groupId);
-          this.checkStripe();
-          this.startFetchAddresses();
-          this.startFetchMaintenances();
-          this.startFetchProperties();
-        } else {
-          console.error('This user has no property group.');
-        }
-      });
-    }
+    const { dispatch, user } = this.props;
+    const userId = user.uid;
+    firebaseDatabase.ref('admins').once('value', snapshot => {
+      const admins = snapshot.val();
+      console.log('admins...', admins);
+      const currentAdmin = admins[userId];
+      const groupId = currentAdmin ? currentAdmin.property_groups : null;
+      if (groupId) {
+        setPropertyGroup(userId, groupId);
+        dispatch(userLoginSuccess(currentAdmin));
+        this.startFetchAdmins();
+        this.checkStripe();
+        this.startFetchAddresses();
+        this.startFetchMaintenances();
+        this.startFetchProperties();
+      } else {
+        console.error('This user has no property group.');
+      }
+    });
   };
 
   startFetchAddresses = () => {
@@ -190,6 +190,28 @@ export class Private extends React.PureComponent {
       console.log('Updating Addresses Store...', addresses);
       dispatch(fetchAddressesSuccess(addresses));
       // this.startFetchResidents();
+    });
+  };
+
+
+  startFetchAdmins = () => {
+    const { dispatch, user } = this.props;
+    const userId = user.uid;
+    firebaseDatabase.ref('admins').on('value', snapshot => {
+      const admins = snapshot.val();
+      const currentAdmin = admins[userId];
+      const groupId = currentAdmin ? currentAdmin.property_groups : null;
+      if (groupId) {
+        const adminArray = [];
+        for (const uid in admins) {
+          const admin = admins[uid];
+          if (uid !== userId && admin.property_groups && admin.property_groups === groupId) {
+            admin.id = uid;
+            adminArray.push(admin);
+          }
+        }
+        dispatch(fetchAdminsSuccess(adminArray));
+      }
     });
   };
 
@@ -217,6 +239,8 @@ export class Private extends React.PureComponent {
     const { dispatch, user } = this.props;
     firebaseDatabase.ref(getFirebasePaths(user.uid).MAINTENANCE_REQUESTS).on('value', snapshot => {
       const records = snapshot.val();
+      const userRole = user.role;
+      const userProperties = user.properties;
       console.log('Updating Maintenance Store...', records);
       const allData = [];
       for (const key in records) {
@@ -254,9 +278,14 @@ export class Private extends React.PureComponent {
     firebaseDatabase.ref(getFirebasePaths(user.uid).PROPERTIES).on('value', snapshot => {
       const records = snapshot.val();
       console.log('Updating Properties Store...', records);
+      const userRole = user.role;
+      const userProperties = user.properties;
       const allData = [];
       const allResidents = [];
       for (const key in records) {
+        if (userRole !== 'Manager' && !userProperties.includes(key)) {
+          continue;
+        }
         const record = records[key];
         const item = {};
         const object = record['building '];
@@ -381,6 +410,12 @@ export class Private extends React.PureComponent {
                 exact
                 component={Maintenance}
               />
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/users`}
+                exact
+                component={Users}
+              />
                <RoutePrivate
                 isAuthenticated
                 path={`${baseUrl}/storage`}
@@ -398,6 +433,12 @@ export class Private extends React.PureComponent {
                 path={`${baseUrl}/community`}
                 exact
                 component={Community}
+              />
+              <RoutePrivate
+                isAuthenticated
+                path={`${baseUrl}/invoices`}
+                exact
+                component={Invoices}
               />
               <RoutePrivate
                 isAuthenticated

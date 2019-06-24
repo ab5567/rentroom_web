@@ -1,5 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import { connect } from 'react-redux';
 import styled from 'styled-components';
 import classNames from 'classnames';
 import { Container as StyledContainer } from 'styled-minimal';
@@ -86,7 +87,11 @@ class Header extends React.PureComponent {
       onScreen,
       addButtonTitle,
       editButtonTitle,
+      user
     } = this.props;
+
+    const isEditable = user.role === 'Manager'
+
     return (
       <Wrapper>
         <Container>
@@ -96,31 +101,31 @@ class Header extends React.PureComponent {
             </Grid>
             <Grid item sm>
               <ButtonsWrapper>
-                {onEdit && (
+                {onEdit && isEditable && (
                   <Button variant="contained" color="default" onClick={onEdit}>
                     {editButtonTitle || 'Edit'}
                     <EditIcon />
                   </Button>
                 )}
-                {onAddNewEntry && (
+                {onAddNewEntry && isEditable && (
                   <Button variant="contained" color="default" onClick={onAddNewEntry}>
                     {addButtonTitle || 'Add New Entry'}
                     <AddIcon />
                   </Button>
                 )}
-                {onAddAccounts && (
+                {onAddAccounts && isEditable && (
                   <Button variant="contained" color="default" onClick={onAddAccounts}>
                     Add Expenses &amp; Revenues
                     <AddIcon />
                   </Button>
                 )}
-                {onScreen && (
+                {onScreen && isEditable && (
                   <Button variant="contained" color="default" onClick={onScreen}>
                     {addButtonTitle || 'Screen Tenants'}
                     <SearchIcon />
                   </Button>  
                 )}
-                {onBulkDelete && (
+                {onBulkDelete && isEditable && (
                   <Button
                     variant="contained"
                     color="secondary"
@@ -141,7 +146,7 @@ class Header extends React.PureComponent {
                     <DownloadIcon className={classNames('fa fa-download')} />
                   </Button>
                 )}
-                {onSave && (
+                {onSave && isEditable && (
                   <Button variant="contained" color="default" onClick={onSave}>
                     Save
                     <SaveIcon />
@@ -156,4 +161,10 @@ class Header extends React.PureComponent {
   }
 }
 
-export default Header;
+function mapStateToProps(state) {
+  return { 
+    user: state.user
+  };
+}
+
+export default connect(mapStateToProps)(Header);

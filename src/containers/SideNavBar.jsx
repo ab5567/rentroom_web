@@ -181,8 +181,9 @@ class SideNavBar extends React.PureComponent {
   }
 
   render() {
-    const { mobileOpened } = this.props;
+    const { mobileOpened, user } = this.props;
     const { paymentStateLoaded, paymentLink, paymentLabel } = this.state;
+    const role = user.role
 
     return (
       <Nav mobileOpened={mobileOpened}>
@@ -192,38 +193,59 @@ class SideNavBar extends React.PureComponent {
           {/* <Avatar alt="Remy Sharp" src="/static/images/avatar/1.jpg" className={classes.avatar} /> */}
           {/* <span>{user.email}</span> */}
         </UserSection>
-        <MenuLink to="/fireadmin/dashboard" exact={true} activeClassName="selected">
-          <Logos><DashboardIcon /></Logos>
-          <span>Dashboard</span>
-        </MenuLink>
-        <MenuLink to="/fireadmin/properties" exact={true} activeClassName="selected">
-        <Logos><HomeIcon /></Logos>
-          <span>Properties</span>
-        </MenuLink>
-        <MenuLink to="/fireadmin/residents" activeClassName="selected">
-        <Logos><PersonIcon /></Logos>
-          <span>Residents</span>
-        </MenuLink>
-        {/* <MenuLink to="/fireadmin/listings" className="listings" activeClassName="selected">
-          <span>Listings</span>
-        </MenuLink> */}
-        <MenuLink to="/fireadmin/maintenance" activeClassName="selected">
-        <Logos><MessageIcon /></Logos>
-          <span>Maintenance</span>
-        </MenuLink>
-        <MenuLink to="/fireadmin/community" activeClassName="selected">
-          <Logos><CommunityIcon /></Logos>
-          <span>Community</span>
-        </MenuLink>
-        <MenuLink to="/fireadmin/reports" activeClassName="selected">
-        <Logos><ChartIcon /></Logos>
-          <span>Reports</span>
-        </MenuLink>
+        {(role === 'Owner' || role === 'Manager') &&
+          <MenuLink to="/fireadmin/dashboard" exact={true} activeClassName="selected">
+            <Logos><DashboardIcon /></Logos>
+            <span>Dashboard</span>
+          </MenuLink>
+        }
+        {(role === 'Owner' || role === 'Manager') &&
+          <MenuLink to="/fireadmin/properties" exact={true} activeClassName="selected">
+            <Logos><HomeIcon /></Logos>
+            <span>Properties</span>
+          </MenuLink>
+        }
+        {(role === 'Owner' || role === 'Manager') &&
+          <MenuLink to="/fireadmin/residents" activeClassName="selected">
+            <Logos><PersonIcon /></Logos>
+            <span>Residents</span>
+          </MenuLink>
+        }
+        {(role === 'Maintenance' || role === 'Manager') &&
+          <MenuLink to="/fireadmin/maintenance" activeClassName="selected">
+            <Logos><MessageIcon /></Logos>
+            <span>Maintenance</span>
+          </MenuLink>
+        }
+        {role === 'Manager' &&
+          <MenuLink to="/fireadmin/users" activeClassName="selected">
+            <Logos><MessageIcon /></Logos>
+            <span>Users &amp; Roles</span>
+          </MenuLink>
+        }
+        {role === 'Manager' &&
+          <MenuLink to="/fireadmin/community" activeClassName="selected">
+            <Logos><CommunityIcon /></Logos>
+            <span>Community</span>
+          </MenuLink>
+        }
+        {(role === 'Owner' || role === 'Manager') &&
+          <MenuLink to="/fireadmin/reports" activeClassName="selected">
+            <Logos><ChartIcon /></Logos>
+            <span>Reports</span>
+          </MenuLink>
+        }
+        {(role === 'Maintenance' || role === 'Owner') &&
+          <MenuLink to="/fireadmin/invoices" activeClassName="selected">
+            <Logos><ChartIcon /></Logos>
+            <span>Invoices</span>
+          </MenuLink>
+        }
         {/* <MenuLink to="/fireadmin/metriccs" className="metriccs" activeClassName="selected">
           <span>Metrics</span>
         </MenuLink> */}
         <MenuExternalLink href={paymentLink} isActive={paymentStateLoaded}>
-        <Logos><MoneyIcon /></Logos>
+          <Logos><MoneyIcon /></Logos>
           <span>{paymentLabel}</span>
         </MenuExternalLink>
         <button onClick={this.handleClickLogout}>Logout</button>

@@ -35,6 +35,7 @@ export const ActionTypes = keyMirror({
   FETCH_ADDRESSES_SUCCESS: undefined,
   FETCH_PROPERTIES_SUCCESS: undefined,
   FETCH_MAINTENANCES_SUCCESS: undefined,
+  FETCH_ADMINS_SUCCESS: undefined,
 });
 
 /**

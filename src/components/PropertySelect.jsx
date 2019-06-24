@@ -218,6 +218,7 @@ class IntegrationReactSelect extends React.Component {
     value: PropTypes.object,
     onChange: PropTypes.func,
     suggestions: PropTypes.array.isRequired,
+    isDisabled: PropTypes.bool
   };
 
   handleChange = value => {
@@ -225,7 +226,7 @@ class IntegrationReactSelect extends React.Component {
   };
 
   render() {
-    const { classes, theme, value, suggestions } = this.props;
+    const { classes, theme, value, suggestions, isDisabled, placeholder } = this.props;
 
     const selectStyles = {
       input: base => ({
@@ -243,13 +244,15 @@ class IntegrationReactSelect extends React.Component {
           <Select
             classes={classes}
             styles={selectStyles}
-            textFieldProps={{}}
+            textFieldProps={{
+            }}
             options={suggestions}
             components={components}
             value={value}
             onChange={this.handleChange}
-            placeholder="Owners Reports"
+            placeholder={placeholder || "Owners Reports"}
             isMulti
+            isDisabled={isDisabled}
           />
         </NoSsr>
       </div>

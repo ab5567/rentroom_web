@@ -62,7 +62,7 @@ export class AddEditResidentModal extends React.PureComponent {
 
   componentDidUpdate(prevProps) {
 		if (this.props.open && !prevProps.open) {
-      this.setState({ data: this.props.data });
+      this.setState({ data: this.props.data || { role: 'Owner' } });
 		}
   }
   
