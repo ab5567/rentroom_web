@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { connect } from 'react-redux';
@@ -38,7 +38,7 @@ const Photo = styled.img`
 
 const PropertyItem = styled(Chip)`
   &&& {
-    margin-right: 5px;
+    margin: 2px 5px 2px 0;
   }
 `;
 
@@ -154,9 +154,14 @@ class ExtendedTable extends React.Component {
     } else if (col.id === 'price' || col.id === 'rentRoll' || col.id === 'paid' || col.id === 'amount') {
       return `$${numberWithCommas(item[col.id])}`
     } else if (col.id === 'properties') {
-      const properties = item[col.id]
+      const properties =  item[col.id] ? item[col.id].split(',') : []
       return (
-        properties ? properties.split(',').map(p => <PropertyItem key={p} size="small" label={p}/>) : null
+        <Fragment>
+          {properties.length > 0 && <PropertyItem size="small" label={properties[0]}/>}
+          {properties.length > 1 && <PropertyItem size="small" label={properties[1]}/>}
+          {properties.length > 2 && <PropertyItem size="small" label={properties[2]}/>}
+          {properties.length > 3 && <PropertyItem size="small" label={`+ ${properties.length - 3} More`}/>}
+        </Fragment>
       )
     }else {
       return item[col.id]

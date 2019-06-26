@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import styled from 'styled-components';
-import { Router, Switch, Route } from 'react-router-dom';
+import { Router, Switch, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 import axios from 'axios';
 import DialogActions from '@material-ui/core/DialogActions';
@@ -256,6 +256,7 @@ export class Private extends React.PureComponent {
           item.photo = object.photo;
           item.message = object.message;
           item.status = object.status ? object.status : 'Opened';
+          item.address = object.address
           const messages = [];
           for (const messageKey in object.messages) {
             const message = object.messages[messageKey];
@@ -265,7 +266,9 @@ export class Private extends React.PureComponent {
           }
           item.messages = messages;
           if (item.tenant) {
-            allData.push(item);
+            if (userRole === 'Manager' || (userRole === 'Maintenance' && object.address && userProperties.includes(object.address))) {
+              allData.push(item);
+            }
           }
         }
       }
@@ -358,9 +361,10 @@ export class Private extends React.PureComponent {
   };
 
   render() {
-    const { match } = this.props;
+    const { match, user } = this.props;
     const { openMobileMenu } = this.state;
-    const baseUrl = match.url;
+    const role = user.role
+
     return (
       <Screen key="Private" data-testid="PrivateWrapper">
         <SideNavBar mobileOpened={openMobileMenu} {...this.props} />
@@ -373,80 +377,109 @@ export class Private extends React.PureComponent {
           </MobileHeader>
           <Container>
             <Switch>
-              <RoutePrivate isAuthenticated path={`${baseUrl}`} exact component={Residents} />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/dashboard`}
-                exact
-                component={Dashboard}
-              />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/properties`}
-                exact
-                component={Properties}
-              />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/properties/:id`}
-                exact
-                component={PropertyDetail}
-              />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/residents`}
-                exact
-                component={Residents}
-              />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/residents/:id`}
-                exact
-                component={AddEditResident}
-              />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/maintenance`}
-                exact
-                component={Maintenance}
-              />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/users`}
-                exact
-                component={Users}
-              />
-               <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/storage`}
-                exact
-                component={Maintenance}
-              />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/maintenance/:id`}
-                exact
-                component={MaintenanceRequestDetails}
-              />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/community`}
-                exact
-                component={Community}
-              />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/invoices`}
-                exact
-                component={Invoices}
-              />
-              <RoutePrivate
-                isAuthenticated
-                path={`${baseUrl}/community/:id`}
-                exact
-                component={AddEditCommunity}
-              />
-              <RoutePrivate isAuthenticated path={`${baseUrl}/reports`} exact component={Reports} />
+              {(role === 'Owner' || role === 'Manager') &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/dashboard`}
+                  exact
+                  component={Dashboard}
+                />
+              }
+              {(role === 'Owner' || role === 'Manager') &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/properties`}
+                  exact
+                  component={Properties}
+                />
+              }
+              {(role === 'Owner' || role === 'Manager') &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/properties/:id`}
+                  exact
+                  component={PropertyDetail}
+                />
+              }
+              {(role === 'Owner' || role === 'Manager') &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/residents`}
+                  exact
+                  component={Residents}
+                />
+              }
+              {(role === 'Maintenance' || role === 'Manager') &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/residents/:id`}
+                  exact
+                  component={AddEditResident}
+                />
+              }
+              {(role === 'Maintenance' || role === 'Manager') &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/maintenance`}
+                  exact
+                  component={Maintenance}
+                />
+              }
+              {role === 'Manager' &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/users`}
+                  exact
+                  component={Users}
+                />
+              }
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/storage`}
+                  exact
+                  component={Maintenance}
+                />
+              {(role === 'Maintenance' || role === 'Manager') &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/maintenance/:id`}
+                  exact
+                  component={MaintenanceRequestDetails}
+                />
+              }
+              {role === 'Manager' &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/community`}
+                  exact
+                  component={Community}
+                />
+              }
+              {(role === 'Maintenance' || role === 'Owner') &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/invoices`}
+                  exact
+                  component={Invoices}
+                />
+              }
+              {role === 'Manager' &&
+                <RoutePrivate
+                  isAuthenticated
+                  path={`/fireadmin/community/:id`}
+                  exact
+                  component={AddEditCommunity}
+                />
+              }
+              {(role === 'Owner' || role === 'Manager') &&
+                <RoutePrivate isAuthenticated path={`/fireadmin/reports`} exact component={Reports} />
+              }
+              {(role === 'Owner' || role === 'Manager') &&
+                <Redirect from={`/fireadmin/`} to={`/fireadmin/dashboard`}/>
+              }
+              {role === 'Maintenance' &&
+                <Redirect from={`/fireadmin/`} to={`/fireadmin/maintenance`}/>
+              }
             </Switch>
           </Container>
         </Body>

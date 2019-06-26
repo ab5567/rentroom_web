@@ -47,61 +47,22 @@ export class Maintenance extends React.PureComponent {
     order: 'asc',
     orderBy: SearchColDefs[0],
     selected: [],
-    allData: [],
-    data: [],
     searchTerm: '',
     page: 0,
     rowsPerPage: 10,
     status: '',
-    sortColDefs: SortColDefs,
-    loading: false,
     selectedItem: {}
   }
 
-  componentDidMount() {
-    this.setState({ loading: true });
-    this.refreshData();
-  }
 
-  refreshData = () => {
-    const { user } = this.props;
-    firebaseDatabase.ref(getFirebasePaths(user.uid).MAINTENANCE_REQUESTS).once('value').then((snapshot) => {
-      this.setState({ loading: false });
-      this.processRecords(snapshot.val())
-    });
-  }
-
-  processRecords = (records) => {
-    const allData = [];
-    for (var key in records){
-      const item = {};
-      const object = records[key];
-      if (object) {
-        item.id = key;
-        item.tenant = object.tenant;
-        item.tenant_email = object.tenant_email;
-        item.tenant_phone = object.tenant_phone;
-        item.property = object.property;
-        item.subject = object.subject;
-        item.photo = object.photo; 
-        item.message = object.message; 
-        item.status = object.status ? object.status : 'Open'
-        if (item.tenant) {
-          allData.push(item);
-        }
+  getSortColDefs = () => {
+    const { maintenances }  = this.props;
+    return SortColDefs.map(sortCol => {
+      const array = _.compact(_.map(_.uniqBy(maintenances, sortCol.id), (item) => item[sortCol.id]));
+      return {
+        ...sortCol,
+        array
       }
-    }
-    const sortColDefs = this.state.sortColDefs;
-    sortColDefs.forEach(sortCol => {
-      const array = _.compact(_.map(_.uniqBy(allData, sortCol.id), (item) => item[sortCol.id]));
-      sortCol.array = array;
-    });
-
-    this.setState({ 
-      allData,
-      data: allData,
-      sortColDefs,
-      selected: []
     });
   }
 
@@ -157,7 +118,7 @@ export class Maintenance extends React.PureComponent {
         return;
       }
       this.refreshData();
-    });;
+    });
   }
 
 
@@ -166,8 +127,9 @@ export class Maintenance extends React.PureComponent {
   }
  
   sortAndFilterArray = () => {
-    const { order, orderBy, allData, sortColDefs, searchTerm } = this.state;
-    const filterArray = allData.filter(item => {
+    const { maintenances } = this.props;
+    const { order, orderBy, searchTerm } = this.state;
+    const filterArray = maintenances.filter(item => {
       let shouldShow = true;
       if (searchTerm) {
         const lowerCaseSearchTerm = searchTerm.toLowerCase();
@@ -177,7 +139,7 @@ export class Maintenance extends React.PureComponent {
         }); 
         shouldShow = shouldShow && includeSearchTerm;
       }
-      sortColDefs.forEach(sortCol => {
+      SearchColDefs.forEach(sortCol => {
         const filterValue = this.state[sortCol.id];
         if (filterValue) {
           shouldShow = shouldShow && (item[sortCol.id] === filterValue)
@@ -189,18 +151,19 @@ export class Maintenance extends React.PureComponent {
   }
 
   render() {
-    const { order, orderBy, selected, rowsPerPage, page, sortColDefs, loading } = this.state;
+    const { isMaintenanceLoaded } = this.props 
+    const { order, orderBy, selected, rowsPerPage, page } = this.state;
     const data = this.sortAndFilterArray();
  
     return (
       <Fragment>
-        <Progress loading={loading}/>
+        <Progress loading={!isMaintenanceLoaded}/>
         <Header 
           title="Maintenance"
           onExport={this.handleExport}
         />
         <SearchSection
-          sortColDefs={sortColDefs} 
+          sortColDefs={this.getSortColDefs()} 
           rowsLength={data.length}
           onChange={this.handleStateChange}
         />
@@ -227,7 +190,11 @@ export class Maintenance extends React.PureComponent {
 
 /* istanbul ignore next */
 function mapStateToProps(state) {
-  return { user: state.user };
+  return { 
+    user: state.user,
+    isMaintenanceLoaded: state.data.isMaintenanceLoaded,
+    maintenances: state.data.maintenances,
+  };
 }
 
 export default connect(mapStateToProps)(Maintenance);

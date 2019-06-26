@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { Router, Switch, Route } from 'react-router-dom';
+import { Router, Switch, Route, Redirect } from 'react-router-dom';
 import Helmet from 'react-helmet';
 import styled, { css, ThemeProvider } from 'styled-components';
 import treeChanges from 'tree-changes';
@@ -101,11 +101,7 @@ export class App extends React.Component {
                   path="/fireadmin"
                   component={Private}
                 />
-                <RoutePrivate
-                  isAuthenticated={user.isAuthenticated}
-                  path="/"
-                  component={Private}
-                />
+                <Redirect from={`/`} to={`/fireadmin`}/>
                 <Route component={NotFound} />
               </Switch>
             </Main>
